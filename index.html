@@ -1,0 +1,41 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fast Food Feedback</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>🍔 Fast Food Feedback</h1>
+    <form id="feedback-form" action="https://formspree.io/f/xaylqwge"  method="POST">
+      <label>Name:</label>
+      <input type="text" name="name" required>
+
+      <label>Email:</label>
+      <input type="email" name="email" required>
+
+      <label>Feedback:</label>
+      <textarea name="message" required></textarea>
+
+      <label>Rating:</label>
+      <div class="stars">
+        <input type="radio" id="star5" name="rating" value="5" required><label for="star5">★</label>
+        <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
+        <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
+        <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
+        <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
+      </div>
+
+      <button type="submit">Submit Feedback</button>
+    </form>
+
+    <div id="avg-rating">
+      <h2>⭐ Average Rating: <span id="average">N/A</span></h2>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

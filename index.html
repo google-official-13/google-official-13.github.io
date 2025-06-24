@@ -21,7 +21,7 @@
     </div>
 
     <div id="login-section">
-      <button id="loginBtn">Sign in with Google</button>
+      <button id="loginBtn">🔐 Sign in with Google</button>
       <p id="user-info" style="display:none;"></p>
     </div>
 
@@ -91,6 +91,30 @@
     };
     firebase.initializeApp(firebaseConfig);
   </script>
+
+  <script>
+    const loginBtn = document.getElementById("loginBtn");
+    const userInfo = document.getElementById("user-info");
+    const feedbackForm = document.getElementById("feedback-form");
+
+    loginBtn.addEventListener("click", () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithPopup(provider)
+        .then(result => {
+          const user = result.user;
+          document.querySelector("input[name='name']").value = user.displayName;
+          document.querySelector("input[name='email']").value = user.email;
+          userInfo.textContent = `Signed in as: ${user.displayName}`;
+          userInfo.style.display = "block";
+          feedbackForm.style.display = "block";
+          loginBtn.style.display = "none";
+        })
+        .catch(err => {
+          alert("Login failed: " + err.message);
+        });
+    });
+  </script>
+
   <script src="script.js"></script>
 </body>
 </html>

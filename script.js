@@ -25,12 +25,17 @@ firebase.auth().onAuthStateChanged(user => {
     form.name.readOnly = true;
     form.email.readOnly = true;
     form.style.display = "block"; // show form
+    document.getElementById("user-info").innerText = `Signed in as ${user.displayName}`;
+    document.getElementById("user-info").style.display = "block";
+    document.getElementById("loginBtn").style.display = "none";
   } else {
-    firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithPopup(provider).catch(console.error);
+    });
   }
 });
 
-// Time formatter
 function timeAgo(date) {
   const seconds = Math.floor((new Date() - new Date(date)) / 1000);
   const intervals = { year: 31536000, month: 2592000, week: 604800, day: 86400, hour: 3600, minute: 60 };
@@ -41,13 +46,11 @@ function timeAgo(date) {
   return "Just now";
 }
 
-// Popup
 function showPopup() {
   popup.classList.add("show");
   setTimeout(() => popup.classList.remove("show"), 3000);
 }
 
-// Submit handler
 form.addEventListener("submit", function (e) {
   e.preventDefault();
   const name = form.name.value.trim();
@@ -104,7 +107,6 @@ form.addEventListener("submit", function (e) {
   }
 });
 
-// Mood Emoji
 function getMoodTag(rating) {
   if (rating >= 5) return "🌟 Loved it!";
   if (rating === 4) return "👍 Good";
@@ -112,7 +114,6 @@ function getMoodTag(rating) {
   return "👎 Needs Work";
 }
 
-// Load reviews
 function loadReviews() {
   db.once("value", snapshot => {
     const data = snapshot.val();
@@ -135,7 +136,6 @@ function loadReviews() {
       const div = document.createElement("div");
       div.classList.add("review-entry");
 
-      // Toggleable Previous Review
       let previousToggle = "";
       if (latestReview && previousReview && entry.id === latestReview.id) {
         previousToggle = `
@@ -165,6 +165,5 @@ function loadReviews() {
   });
 }
 
-// Filter event
 filterRating.addEventListener("change", loadReviews);
 loadReviews();

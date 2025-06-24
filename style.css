@@ -12,12 +12,13 @@ body {
   color: #ffffff;
   margin: 0;
   padding: 0;
+  overflow-x: hidden; /* ✅ fix mobile right overflow */
 }
 
 .container {
   max-width: 600px;
   margin: 60px auto;
-  background: rgba(0, 0, 0, 0.4); /* ✅ darker + transparent */
+  background: rgba(0, 0, 0, 0.4);
   padding: 30px;
   border-radius: 15px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.6);
@@ -49,7 +50,7 @@ input, textarea {
   width: 100%;
   padding: 12px 10px;
   margin-top: 8px;
-  background: rgba(0, 0, 0, 0.3); /* ✅ slightly darker */
+  background: rgba(0, 0, 0, 0.3);
   border: none;
   border-bottom: 2px solid #ffcc00;
   border-radius: 5px;
@@ -124,7 +125,7 @@ button:hover {
 #review-list {
   margin-top: 30px;
   padding: 20px;
-  background-color: rgba(0, 0, 0, 0.3); /* ✅ dark blur */
+  background-color: rgba(0, 0, 0, 0.3);
   border-radius: 10px;
   font-size: 15px;
   color: #eee;
@@ -169,6 +170,7 @@ button:hover {
   .container {
     margin: 20px;
     padding: 20px;
+    width: 95%; /* ✅ fix for mobile layout */
   }
 
   h1 {

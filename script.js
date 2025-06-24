@@ -1,8 +1,11 @@
+// ✅ ImgBB API Integration
+
 const form = document.getElementById("feedback-form");
 const averageDisplay = document.getElementById("average");
 const reviewList = document.getElementById("review-list");
 const db = firebase.database().ref("feedbacks");
-const storage = firebase.storage().ref("review-images");
+
+const imgbbAPIKey = "3a01fad3d6c23d5bab709c94eae3b9c9"; // your ImgBB API key
 
 form.addEventListener("submit", function (e) {
   e.preventDefault();
@@ -13,32 +16,41 @@ form.addEventListener("submit", function (e) {
   const rating = form.rating.value;
   const imageFile = document.getElementById("imageUpload").files[0];
 
-  if (!name || !email || !message || !rating) {
-    alert("Please fill all fields.");
-    return;
-  }
-
   if (imageFile) {
-    if (imageFile.size > 5 * 1024 * 1024) {
-      alert("Image too large. Please upload under 5MB.");
-      return;
-    }
+    const formData = new FormData();
+    formData.append("image", imageFile);
 
-    alert("Uploading image...");
-    const filePath = Date.now() + "_" + imageFile.name;
-    const uploadTask = storage.child(filePath).put(imageFile);
-
-    uploadTask.then(snapshot => snapshot.ref.getDownloadURL())
-      .then(imageUrl => {
-        saveFeedback({ name, email, message, rating: parseInt(rating), imageUrl });
+    fetch(`https://api.imgbb.com/1/upload?key=${imgbbAPIKey}`, {
+      method: "POST",
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          saveFeedback({
+            name,
+            email,
+            message,
+            rating: parseInt(rating),
+            imageUrl: data.data.url
+          });
+        } else {
+          alert("Image upload failed.");
+          console.error("ImgBB response error:", data);
+        }
       })
-      .catch(error => {
-        alert("Image upload failed. Submitting without image.");
-        console.error(error);
-        saveFeedback({ name, email, message, rating: parseInt(rating), imageUrl: null });
+      .catch(err => {
+        console.error("Upload error:", err);
+        alert("Image upload failed.");
       });
   } else {
-    saveFeedback({ name, email, message, rating: parseInt(rating), imageUrl: null });
+    saveFeedback({
+      name,
+      email,
+      message,
+      rating: parseInt(rating),
+      imageUrl: null
+    });
   }
 });
 
@@ -70,7 +82,9 @@ function loadReviews() {
       reviewList.appendChild(div);
     }
 
-    averageDisplay.textContent = count ? (total / count).toFixed(1) + " / 5" : "N/A";
+    averageDisplay.textContent = count
+      ? (total / count).toFixed(1) + " / 5"
+      : "N/A";
   });
 }
 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -8,9 +8,9 @@
 </head>
 <body>
   <div class="container">
-    <h1>🍔 Fast Food Feedback</h1>
+    <h1>RamDev Dalvada</h1>
 
-    <form id="feedback-form" action="https://formspree.io/f/xpwrylrz" method="POST">
+    <form id="feedback-form">
       <label>Name:</label>
       <input type="text" name="name" required>
 
@@ -35,8 +35,29 @@
     <div id="avg-rating">
       <h2>⭐ Average Rating: <span id="average">N/A</span></h2>
     </div>
+    <div id="review-list"></div>
   </div>
 
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <!-- Firebase Config -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAumqMP8xJyz29JIUme0xKqeHqFa89Zgpw",
+      authDomain: "fast-food-feedback-ad9d2.firebaseapp.com",
+      databaseURL: "https://fast-food-feedback-ad9d2-default-rtdb.firebaseio.com",
+      projectId: "fast-food-feedback-ad9d2",
+      storageBucket: "fast-food-feedback-ad9d2.firebasestorage.app",
+      messagingSenderId: "443979330302",
+      appId: "1:443979330302:web:ac16d2bb95d44884a6abaf",
+      measurementId: "G-NV965T81WZ"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <!-- Main Logic -->
   <script src="script.js"></script>
 </body>
 </html>

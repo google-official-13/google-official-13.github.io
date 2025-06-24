@@ -1,25 +1,44 @@
- const form = document.getElementById("feedback-form");
+const form = document.getElementById("feedback-form");
 const averageDisplay = document.getElementById("average");
-let ratings = JSON.parse(localStorage.getItem("ratings")) || [];
+const reviewList = document.getElementById("review-list");
+const db = firebase.database().ref("feedbacks");
 
-form.addEventListener("submit", function () {
+form.addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const name = form.name.value;
+  const email = form.email.value;
+  const message = form.message.value;
   const rating = form.rating.value;
-  if (rating) {
-    ratings.push(parseInt(rating));
-    localStorage.setItem("ratings", JSON.stringify(ratings));
-    updateAverage();
-  }
-  // Allow Formspree to submit naturally (no preventDefault)
+
+  const feedback = { name, email, message, rating: parseInt(rating), date: new Date().toISOString() };
+  db.push(feedback); // save to Firebase
+
+  form.reset(); // clear form
+  alert("Feedback submitted!");
+
+  setTimeout(loadReviews, 500); // refresh reviews after submit
 });
 
-function updateAverage() {
-  if (ratings.length === 0) {
-    averageDisplay.textContent = "N/A";
-    return;
-  }
-  const total = ratings.reduce((a, b) => a + b, 0);
-  const avg = (total / ratings.length).toFixed(1);
-  averageDisplay.textContent = `${avg} / 5`;
+// Load reviews and calculate average
+function loadReviews() {
+  db.once("value", snapshot => {
+    const data = snapshot.val();
+    let total = 0, count = 0;
+    reviewList.innerHTML = "";
+
+    for (let key in data) {
+      const { name, message, rating } = data[key];
+      total += rating;
+      count++;
+
+      const div = document.createElement("div");
+      div.innerHTML = `<p><strong>${name}</strong>: ${message} <br>⭐ ${rating}</p><hr>`;
+      reviewList.appendChild(div);
+    }
+
+    averageDisplay.textContent = count ? (total / count).toFixed(1) + " / 5" : "N/A";
+  });
 }
 
-updateAverage();
+loadReviews(); // Load when page starts

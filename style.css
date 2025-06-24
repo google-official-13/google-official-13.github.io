@@ -73,3 +73,22 @@ button {
   margin-top: 30px;
   font-size: 1.2rem;
 }
+
+#review-list {
+  margin-top: 30px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+}
+
+#review-list p {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+#review-list hr {
+  border: 0;
+  border-top: 1px solid #ddd;
+  margin: 10px 0;
+}
+

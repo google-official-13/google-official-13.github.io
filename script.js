@@ -17,15 +17,14 @@ form.addEventListener("submit", function (e) {
     const filePath = Date.now() + "_" + imageFile.name;
     const uploadTask = storage.child(filePath).put(imageFile);
 
-    uploadTask.then(snapshot => {
-      return snapshot.ref.getDownloadURL();
-    }).then(imageUrl => {
-      saveFeedback({ name, email, message, rating: parseInt(rating), imageUrl });
-    }).catch(error => {
-      alert("Image upload failed.");
-      console.error(error);
-    });
-
+    uploadTask.then(snapshot => snapshot.ref.getDownloadURL())
+      .then(imageUrl => {
+        saveFeedback({ name, email, message, rating: parseInt(rating), imageUrl });
+      })
+      .catch(error => {
+        alert("Image upload failed.");
+        console.error(error);
+      });
   } else {
     saveFeedback({ name, email, message, rating: parseInt(rating), imageUrl: null });
   }
@@ -36,10 +35,9 @@ function saveFeedback(feedback) {
   db.push(feedback);
   form.reset();
   alert("Feedback submitted!");
-  setTimeout(loadReviews, 500); // Refresh reviews after short delay
+  setTimeout(loadReviews, 500);
 }
 
-// Load and display reviews
 function loadReviews() {
   db.once("value", snapshot => {
     const data = snapshot.val();
@@ -64,4 +62,4 @@ function loadReviews() {
   });
 }
 
-loadReviews(); // On page load
+loadReviews();

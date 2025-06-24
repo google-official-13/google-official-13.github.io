@@ -1,11 +1,15 @@
- @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Playfair+Display:wght@600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Playfair+Display:wght@600&display=swap');
+
+* {
+  box-sizing: border-box;
+}
 
 body {
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)),
-    url('Moong\ Dal\ Vada.jpeg') no-repeat center center fixed;
+  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)),
+    url('Moong Dal Vada.jpeg') no-repeat center center fixed;
   background-size: cover;
-  color: #f1f1f1;
+  color: #ffffff;
   margin: 0;
   padding: 0;
 }
@@ -13,12 +17,14 @@ body {
 .container {
   max-width: 600px;
   margin: 60px auto;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.4); /* ✅ darker + transparent */
   padding: 30px;
   border-radius: 15px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
   animation: fadeInUp 1s ease;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 h1 {
@@ -34,25 +40,34 @@ h1 {
 label {
   display: block;
   margin-top: 20px;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 600;
+  color: #ffffff;
 }
 
 input, textarea {
   width: 100%;
-  padding: 12px;
+  padding: 12px 10px;
   margin-top: 8px;
+  background: rgba(0, 0, 0, 0.3); /* ✅ slightly darker */
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  background-color: #222;
-  color: white;
+  border-bottom: 2px solid #ffcc00;
+  border-radius: 5px;
+  font-size: 15px;
+  color: #fff;
+  outline: none;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   transition: all 0.3s ease;
 }
 
+input::placeholder, textarea::placeholder {
+  color: #ccc;
+}
+
 input:focus, textarea:focus {
-  outline: 2px solid #ffcc00;
-  background-color: #333;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-bottom: 2px solid #ffaa00;
 }
 
 button {
@@ -62,8 +77,8 @@ button {
   background-color: #ffcc00;
   color: black;
   border: none;
-  border-radius: 8px;
-  font-size: 18px;
+  border-radius: 6px;
+  font-size: 17px;
   font-weight: bold;
   cursor: pointer;
   transition: background 0.3s ease;
@@ -73,7 +88,6 @@ button:hover {
   background-color: #ffaa00;
 }
 
-/* ⭐⭐⭐ Star Styling Updated ⭐⭐⭐ */
 .stars {
   display: flex;
   justify-content: center;
@@ -86,11 +100,11 @@ button:hover {
 }
 
 .stars label {
-  font-size: 40px;
+  font-size: 35px;
   color: #888;
   cursor: pointer;
   transition: color 0.2s ease;
-  padding: 0 5px;
+  padding: 0 4px;
 }
 
 .stars input:checked ~ label,
@@ -102,7 +116,7 @@ button:hover {
 #avg-rating {
   text-align: center;
   margin-top: 30px;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   font-weight: bold;
   color: #fff;
 }
@@ -110,10 +124,11 @@ button:hover {
 #review-list {
   margin-top: 30px;
   padding: 20px;
-  background-color: rgba(255,255,255,0.05);
+  background-color: rgba(0, 0, 0, 0.3); /* ✅ dark blur */
   border-radius: 10px;
   font-size: 15px;
-  color: #ddd;
+  color: #eee;
+  backdrop-filter: blur(6px);
 }
 
 #review-list p {
@@ -127,28 +142,29 @@ button:hover {
   margin: 10px 0;
 }
 
-/* Animations */
+#review-list img {
+  display: block;
+  max-width: 100%;
+  border-radius: 10px;
+  margin: 10px 0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease;
+}
+
+#review-list img:hover {
+  transform: scale(1.02);
+}
+
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  } to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  } to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsive */
 @media (max-width: 600px) {
   .container {
     margin: 20px;
@@ -164,7 +180,7 @@ button:hover {
   }
 
   .stars label {
-    font-size: 32px;
+    font-size: 30px;
   }
 }
 
@@ -175,29 +191,12 @@ button:hover {
   font-size: 14px;
   color: #ccc;
   font-family: 'Poppins', sans-serif;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.3);
   border-radius: 10px;
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(4px);
 }
 
 .developer-credit span {
   font-weight: 600;
   color: #ffcc00;
 }
-
-
-/* 📸 Uploaded Review Image Styling */
-#review-list img {
-  display: block;
-  max-width: 100%;
-  border-radius: 10px;
-  margin: 10px 0;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-  transition: transform 0.3s ease;
-}
-
-#review-list img:hover {
-  transform: scale(1.02);
-}
-
-

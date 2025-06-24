@@ -202,3 +202,14 @@ button:hover {
   font-weight: 600;
   color: #ffcc00;
 }
+.phone-link {
+  color: #fff; /* Make it white */
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.phone-link:hover {
+  color: #ffcc00; /* Optional: nice hover effect */
+  text-decoration: underline;
+}
+

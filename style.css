@@ -6,13 +6,11 @@
 
 body {
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)),
-    url('Moong Dal Vada.jpeg') no-repeat center center fixed;
+  background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.85)), url('Moong Dal Vada.jpeg') no-repeat center center fixed;
   background-size: cover;
-  color: #ffffff;
+  color: #f5f5f5;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -29,19 +27,16 @@ body {
   box-shadow: 0 8px 24px rgba(0,0,0,0.6);
   animation: fadeInUp 1s ease;
   backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-sizing: border-box;
 }
 
 h1 {
   text-align: center;
   margin-bottom: 30px;
   font-size: 36px;
-  color: #fff700;
+  color: #FFC107;
   font-family: 'Playfair Display', serif;
   animation: fadeInDown 1s ease;
-  letter-spacing: 1px;
 }
 
 label {
@@ -49,7 +44,7 @@ label {
   margin-top: 20px;
   font-size: 16px;
   font-weight: 600;
-  color: #ffffff;
+  color: #fdf6e3;
 }
 
 input, textarea {
@@ -58,30 +53,18 @@ input, textarea {
   margin-top: 8px;
   background: rgba(0, 0, 0, 0.3);
   border: none;
-  border-bottom: 2px solid #ffcc00;
+  border-bottom: 2px solid #FFC107;
   border-radius: 5px;
   font-size: 15px;
-  color: #fff;
+  color: #ffffff;
   outline: none;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  transition: all 0.3s ease;
-}
-
-input::placeholder, textarea::placeholder {
-  color: #ccc;
-}
-
-input:focus, textarea:focus {
-  background-color: rgba(0, 0, 0, 0.4);
-  border-bottom: 2px solid #ffaa00;
 }
 
 button {
   width: 100%;
   padding: 12px;
   margin-top: 25px;
-  background-color: #ffcc00;
+  background-color: #FFC107;
   color: black;
   border: none;
   border-radius: 6px;
@@ -92,7 +75,7 @@ button {
 }
 
 button:hover {
-  background-color: #ffaa00;
+  background-color: #ffb300;
 }
 
 .stars {
@@ -110,14 +93,13 @@ button:hover {
   font-size: 35px;
   color: #888;
   cursor: pointer;
-  transition: color 0.2s ease;
   padding: 0 4px;
 }
 
 .stars input:checked ~ label,
 .stars label:hover,
 .stars label:hover ~ label {
-  color: gold;
+  color: #FFC107;
 }
 
 #avg-rating {
@@ -125,7 +107,7 @@ button:hover {
   margin-top: 30px;
   font-size: 1.3rem;
   font-weight: bold;
-  color: #fff;
+  color: #f5f5f5;
 }
 
 #review-list {
@@ -133,48 +115,72 @@ button:hover {
   padding: 20px;
   background-color: rgba(0, 0, 0, 0.3);
   border-radius: 10px;
-  font-size: 15px;
-  color: #eee;
-  backdrop-filter: blur(6px);
 }
 
-#review-list p {
-  margin-bottom: 10px;
+.review-entry {
+  margin-bottom: 15px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   line-height: 1.6;
+  transition: transform 0.2s ease;
 }
 
-#review-list hr {
-  border: 0;
-  border-top: 1px solid #444;
-  margin: 10px 0;
+.review-entry:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.08);
 }
 
-#review-list img {
-  display: block;
-  max-width: 100%;
+.review-entry img {
+  width: 100px;
   border-radius: 10px;
-  margin: 10px 0;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-  transition: transform 0.3s ease;
+  margin-top: 8px;
+  cursor: pointer;
 }
 
-#review-list img:hover {
-  transform: scale(1.02);
+.review-entry img.enlarged {
+  width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  z-index: 100;
 }
 
-/* Phone number style fix */
+.review-time {
+  font-size: 0.8rem;
+  color: #ccc;
+}
+
 .phone-link {
-  color: #fff;
+  color: #f5f5f5;
   text-decoration: none;
   font-weight: 500;
 }
 
 .phone-link:hover {
-  color: #ffcc00;
-  text-decoration: underline;
+  color: #FFC107;
 }
 
-/* Animations */
+.popup {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #FFC107;
+  color: black;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.3s ease;
+  transform: translateY(-20px);
+  z-index: 999;
+}
+
+.popup.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
@@ -185,39 +191,120 @@ button:hover {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-  .container {
-    width: 95%;
-    padding: 20px;
-  }
-
-  h1 {
-    font-size: 26px;
-  }
-
-  input, textarea, button {
-    font-size: 14px;
-  }
-
-  .stars label {
-    font-size: 30px;
-  }
-}
-
 .developer-credit {
   text-align: center;
   margin-top: 40px;
   padding: 15px;
   font-size: 14px;
-  color: #ccc;
-  font-family: 'Poppins', sans-serif;
   background: rgba(0, 0, 0, 0.3);
   border-radius: 10px;
   backdrop-filter: blur(4px);
+  color: #f5f5f5;
 }
 
 .developer-credit span {
   font-weight: 600;
-  color: #ffcc00;
+  color: #FFC107;
+}
+
+.avatar {
+  background: #FFC107;
+  color: black;
+  border-radius: 50%;
+  display: inline-block;
+  width: 35px;
+  height: 35px;
+  text-align: center;
+  line-height: 35px;
+  font-weight: bold;
+  margin-right: 10px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.mood-tag {
+  font-size: 0.9rem;
+  font-weight: bold;
+  margin-left: 10px;
+  color: #FFC107;
+}
+
+#loader {
+  display: none;
+  text-align: center;
+  font-size: 14px;
+  margin-top: 10px;
+  color: #ccc;
+}
+
+.filter-container {
+  margin-top: 25px;
+  text-align: center;
+  font-size: 14px;
+  color: #ffffff;
+  font-family: 'Poppins', sans-serif;
+}
+
+.filter-container label {
+  font-weight: 500;
+  margin-right: 8px;
+  color: #ffffff;
+}
+
+#filterRating {
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  outline: none;
+  backdrop-filter: blur(6px);
+  transition: background 0.3s ease;
+  appearance: none;
+}
+
+#filterRating:hover,
+#filterRating:focus {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+#filterRating option {
+  background: rgba(0, 0, 0, 0.95);
+  color: #ffffff;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+}
+
+#imageUpload {
+  display: none;
+}
+
+.custom-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #FFC107;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  border-radius: 8px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background 0.3s ease, transform 0.2s ease;
+  border: none;
+}
+
+.custom-upload-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  transform: scale(1.03);
+}
+
+.custom-upload-btn i {
+  font-size: 16px;
+  color: #ffffff;
 }

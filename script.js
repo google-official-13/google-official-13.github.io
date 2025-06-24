@@ -2,6 +2,7 @@ const form = document.getElementById("feedback-form");
 const averageDisplay = document.getElementById("average");
 const reviewList = document.getElementById("review-list");
 const db = firebase.database().ref("feedbacks");
+const storage = firebase.storage().ref("review-images");
 
 form.addEventListener("submit", function (e) {
   e.preventDefault();
@@ -10,17 +11,35 @@ form.addEventListener("submit", function (e) {
   const email = form.email.value;
   const message = form.message.value;
   const rating = form.rating.value;
+  const imageFile = document.getElementById("imageUpload").files[0];
 
-  const feedback = { name, email, message, rating: parseInt(rating), date: new Date().toISOString() };
-  db.push(feedback); // save to Firebase
+  if (imageFile) {
+    const filePath = Date.now() + "_" + imageFile.name;
+    const uploadTask = storage.child(filePath).put(imageFile);
 
-  form.reset(); // clear form
-  alert("Feedback submitted!");
+    uploadTask.then(snapshot => {
+      return snapshot.ref.getDownloadURL();
+    }).then(imageUrl => {
+      saveFeedback({ name, email, message, rating: parseInt(rating), imageUrl });
+    }).catch(error => {
+      alert("Image upload failed.");
+      console.error(error);
+    });
 
-  setTimeout(loadReviews, 500); // refresh reviews after submit
+  } else {
+    saveFeedback({ name, email, message, rating: parseInt(rating), imageUrl: null });
+  }
 });
 
-// Load reviews and calculate average
+function saveFeedback(feedback) {
+  feedback.date = new Date().toISOString();
+  db.push(feedback);
+  form.reset();
+  alert("Feedback submitted!");
+  setTimeout(loadReviews, 500); // Refresh reviews after short delay
+}
+
+// Load and display reviews
 function loadReviews() {
   db.once("value", snapshot => {
     const data = snapshot.val();
@@ -28,12 +47,16 @@ function loadReviews() {
     reviewList.innerHTML = "";
 
     for (let key in data) {
-      const { name, message, rating } = data[key];
+      const { name, message, rating, imageUrl } = data[key];
       total += rating;
       count++;
 
       const div = document.createElement("div");
-      div.innerHTML = `<p><strong>${name}</strong>: ${message} <br>⭐ ${rating}</p><hr>`;
+      div.innerHTML = `
+        <p><strong>${name}</strong>: ${message} <br>⭐ ${rating}</p>
+        ${imageUrl ? `<img src="${imageUrl}" alt="Review Image">` : ""}
+        <hr>
+      `;
       reviewList.appendChild(div);
     }
 
@@ -41,4 +64,4 @@ function loadReviews() {
   });
 }
 
-loadReviews(); // Load when page starts
+loadReviews(); // On page load

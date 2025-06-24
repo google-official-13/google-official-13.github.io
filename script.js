@@ -143,7 +143,6 @@ function loadReviews() {
         const div = document.createElement("div");
         div.classList.add("review-entry");
 
-        // ✅ Past review toggle
         let previousToggle = "";
         if (latestReview && previousReview && entry.id === latestReview.id) {
           previousToggle = `
@@ -156,11 +155,11 @@ function loadReviews() {
         }
 
         div.innerHTML = `
-          <div style="display: flex; align-items: center; margin-bottom: 5px;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
             <div class="avatar">${entry.name.charAt(0).toUpperCase()}</div>
             <div>
-              <strong>${entry.name}</strong>
-              <div style="font-size: 12px; color: #aaa;">${entry.email}</div>
+              <strong>${entry.name}</strong><br>
+              <span style="font-size: 12px; color: #888;">${entry.email}</span>
             </div>
           </div>
           <p>${entry.message}</p>

@@ -1,4 +1,4 @@
- const form = document.getElementById("feedback-form");
+const form = document.getElementById("feedback-form");
 const averageDisplay = document.getElementById("average");
 const reviewList = document.getElementById("review-list");
 const popup = document.getElementById("popup");
@@ -8,16 +8,16 @@ const filterRating = document.getElementById("filterRating");
 const db = firebase.database().ref("feedbacks");
 const imgbbAPIKey = "3a01fad3d6c23d5bab709c94eae3b9c9";
 
+// ✅ Generate device ID if not exists
+let deviceId = localStorage.getItem("deviceId");
+if (!deviceId) {
+  deviceId = crypto.randomUUID();
+  localStorage.setItem("deviceId", deviceId);
+}
+
 function timeAgo(date) {
   const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-  const intervals = {
-    year: 31536000,
-    month: 2592000,
-    week: 604800,
-    day: 86400,
-    hour: 3600,
-    minute: 60
-  };
+  const intervals = { year: 31536000, month: 2592000, week: 604800, day: 86400, hour: 3600, minute: 60 };
   for (let unit in intervals) {
     const value = Math.floor(seconds / intervals[unit]);
     if (value >= 1) return `${value} ${unit}${value > 1 ? "s" : ""} ago`;
@@ -40,6 +40,27 @@ form.addEventListener("submit", function (e) {
 
   loader.style.display = "block";
 
+  const feedback = {
+    name,
+    email,
+    message,
+    rating: parseInt(rating),
+    imageUrl: null,
+    date: new Date().toISOString(),
+    deviceId // ✅ Save device ID
+  };
+
+  localStorage.setItem("lastFeedback", JSON.stringify(feedback));
+
+  const uploadAndSave = (imageUrl = null) => {
+    feedback.imageUrl = imageUrl;
+    db.push(feedback);
+    form.reset();
+    loader.style.display = "none";
+    showPopup();
+    setTimeout(loadReviews, 500);
+  };
+
   if (imageFile) {
     const formData = new FormData();
     formData.append("image", imageFile);
@@ -51,13 +72,7 @@ form.addEventListener("submit", function (e) {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          saveFeedback({
-            name,
-            email,
-            message,
-            rating: parseInt(rating),
-            imageUrl: data.data.url
-          });
+          uploadAndSave(data.data.url);
         } else {
           loader.style.display = "none";
           alert("Image upload failed.");
@@ -68,13 +83,7 @@ form.addEventListener("submit", function (e) {
         alert("Image upload failed.");
       });
   } else {
-    saveFeedback({
-      name,
-      email,
-      message,
-      rating: parseInt(rating),
-      imageUrl: null
-    });
+    uploadAndSave();
   }
 });
 
@@ -86,25 +95,17 @@ function getMoodTag(rating) {
   return "";
 }
 
-function saveFeedback(feedback) {
-  feedback.date = new Date().toISOString();
-  db.push(feedback);
-  form.reset();
-  loader.style.display = "none";
-  showPopup();
-  setTimeout(loadReviews, 500);
-}
-
 function loadReviews() {
   db.once("value", snapshot => {
     const data = snapshot.val();
-    const entries = Object.values(data || {}).sort((a, b) => new Date(b.date) - new Date(a.date));
+    const entries = Object.entries(data || {}).map(([id, value]) => ({ id, ...value }));
     const selectedRating = parseInt(filterRating.value || "0");
 
+    const previousReview = entries.find(e => e.deviceId === deviceId);
     let total = 0, count = 0;
     reviewList.innerHTML = "";
 
-    entries.forEach(({ name, message, rating, imageUrl, date }) => {
+    entries.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(({ name, message, rating, imageUrl, date, deviceId: entryDeviceId }) => {
       if (selectedRating && rating < selectedRating) return;
 
       total += rating;
@@ -113,12 +114,18 @@ function loadReviews() {
       const div = document.createElement("div");
       div.classList.add("review-entry");
 
+      let previousReviewText = "";
+      if (entryDeviceId === deviceId && previousReview && previousReview.message !== message) {
+        previousReviewText = `<div style='font-size: 13px; margin-top: 8px; color: #bbb;'>Previous review: <em>${previousReview.message}</em></div>`;
+      }
+
       div.innerHTML = `
         <div style="display: flex; align-items: center; margin-bottom: 5px;">
           <div class="avatar">${name.charAt(0).toUpperCase()}</div>
           <strong>${name}</strong>
         </div>
         <p>${message}</p>
+        ${previousReviewText}
         <p>⭐ ${rating} <span class="mood-tag">${getMoodTag(rating)}</span> <span class="review-time">· ${timeAgo(date)}</span></p>
         ${imageUrl ? `<img src="${imageUrl}" onclick="this.classList.toggle('enlarged')">` : ""}
         <hr>

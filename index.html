@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css" />
   <!-- Font Awesome for camera icon -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -20,11 +21,13 @@
       <p>📞 <a href="tel:+919033561438" class="phone-link">+91 90335 61438</a></p>
     </div>
 
+    <!-- Google Login -->
     <div id="login-section">
       <button id="loginBtn">🔐 Sign in with Google</button>
       <p id="user-info" style="display:none;"></p>
     </div>
 
+    <!-- Feedback Form -->
     <form id="feedback-form" style="display:none;">
       <label>Name:</label>
       <input type="text" name="name" required>
@@ -55,12 +58,15 @@
       <button type="submit">Submit Feedback</button>
     </form>
 
+    <!-- Success Popup -->
     <div id="popup" class="popup">✅ Feedback submitted successfully!</div>
 
+    <!-- Average Rating -->
     <div id="avg-rating">
       <h2>⭐ Average Rating: <span id="average">N/A</span></h2>
     </div>
 
+    <!-- Filter -->
     <div class="filter-container">
       <label>Filter by Rating:</label>
       <select id="filterRating">
@@ -71,13 +77,16 @@
       </select>
     </div>
 
+    <!-- Reviews -->
     <div id="review-list"></div>
   </div>
 
+  <!-- Footer -->
   <footer class="developer-credit">
     <p>© 2025 Ramdev Dalwada | Developed by <span>Fenil</span></p>
   </footer>
 
+  <!-- Firebase Config -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAumqMP8xJyz29JIUme0xKqeHqFa89Zgpw",
@@ -92,29 +101,7 @@
     firebase.initializeApp(firebaseConfig);
   </script>
 
-  <script>
-    const loginBtn = document.getElementById("loginBtn");
-    const userInfo = document.getElementById("user-info");
-    const feedbackForm = document.getElementById("feedback-form");
-
-    loginBtn.addEventListener("click", () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      firebase.auth().signInWithPopup(provider)
-        .then(result => {
-          const user = result.user;
-          document.querySelector("input[name='name']").value = user.displayName;
-          document.querySelector("input[name='email']").value = user.email;
-          userInfo.textContent = `Signed in as: ${user.displayName}`;
-          userInfo.style.display = "block";
-          feedbackForm.style.display = "block";
-          loginBtn.style.display = "none";
-        })
-        .catch(err => {
-          alert("Login failed: " + err.message);
-        });
-    });
-  </script>
-
+  <!-- Main Logic -->
   <script src="script.js"></script>
 </body>
 </html>

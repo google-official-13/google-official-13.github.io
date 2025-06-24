@@ -13,7 +13,18 @@ form.addEventListener("submit", function (e) {
   const rating = form.rating.value;
   const imageFile = document.getElementById("imageUpload").files[0];
 
+  if (!name || !email || !message || !rating) {
+    alert("Please fill all fields.");
+    return;
+  }
+
   if (imageFile) {
+    if (imageFile.size > 5 * 1024 * 1024) {
+      alert("Image too large. Please upload under 5MB.");
+      return;
+    }
+
+    alert("Uploading image...");
     const filePath = Date.now() + "_" + imageFile.name;
     const uploadTask = storage.child(filePath).put(imageFile);
 
@@ -22,8 +33,9 @@ form.addEventListener("submit", function (e) {
         saveFeedback({ name, email, message, rating: parseInt(rating), imageUrl });
       })
       .catch(error => {
-        alert("Image upload failed.");
+        alert("Image upload failed. Submitting without image.");
         console.error(error);
+        saveFeedback({ name, email, message, rating: parseInt(rating), imageUrl: null });
       });
   } else {
     saveFeedback({ name, email, message, rating: parseInt(rating), imageUrl: null });
@@ -52,7 +64,7 @@ function loadReviews() {
       const div = document.createElement("div");
       div.innerHTML = `
         <p><strong>${name}</strong>: ${message} <br>⭐ ${rating}</p>
-        ${imageUrl ? `<img src="${imageUrl}" alt="Review Image">` : ""}
+        ${imageUrl ? `<img src="${imageUrl}" alt="Review Image" style="max-width:100%; border-radius:10px; margin:10px 0;">` : ""}
         <hr>
       `;
       reviewList.appendChild(div);

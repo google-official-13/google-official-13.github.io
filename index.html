@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RamDev Dalwada Feedback</title>
+  <title>Fast Food Feedback</title>
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -13,7 +13,6 @@
 <body>
   <div class="container">
     <h1>RamDev Dalwada</h1>
-
     <div class="contact-info">
       <p>📍 Best Taste in Town</p>
       <p>📧 ritikbhalwala1@gmail.com</p>
@@ -50,13 +49,12 @@
       <label for="imageUpload" class="custom-upload-btn">
         <i class="fas fa-camera"></i> Upload Image
       </label>
-      <input type="file" id="imageUpload" accept="image/*" capture="environment"/>
+      <input type="file" id="imageUpload" accept="image/*" capture="environment" />
 
       <div id="loader">⏳ Uploading image...</div>
       <button type="submit">Submit Feedback</button>
     </form>
 
-    <!-- Popup Notification -->
     <div id="popup" class="popup">✅ Feedback submitted successfully!</div>
 
     <!-- Average Rating and Count -->
@@ -75,7 +73,7 @@
       </select>
     </div>
 
-    <!-- Review List with replies, likes, etc. -->
+    <!-- Review List -->
     <div id="review-list"></div>
   </div>
 
@@ -84,12 +82,13 @@
     <p>© 2025 Ramdev Dalwada | Developed by <span>Fenil</span></p>
   </footer>
 
-  <!-- Fullscreen Image Viewer -->
+  <!-- Image Modal -->
   <div id="image-modal" onclick="this.style.display='none'">
     <img id="modal-img" src="" alt="Full Image">
+    <span class="close-btn"><i class="fas fa-times"></i></span>
   </div>
 
-  <!-- Firebase Configuration -->
+  <!-- Firebase Config -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAumqMP8xJyz29JIUme0xKqeHqFa89Zgpw",
@@ -104,7 +103,7 @@
     firebase.initializeApp(firebaseConfig);
   </script>
 
-  <!-- Main Script -->
+  <!-- Script -->
   <script src="script.js"></script>
 </body>
 </html>

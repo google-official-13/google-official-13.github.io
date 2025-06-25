@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Fast Food Feedback</title>
   <link rel="stylesheet" href="style.css" />
-  <!-- Font Awesome for camera icon -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -51,22 +49,18 @@
       <label for="imageUpload" class="custom-upload-btn">
         <i class="fas fa-camera"></i> Upload Image
       </label>
-      <input type="file" id="imageUpload" accept="image/*" capture="environment" style="display:none;" />
+      <input type="file" id="imageUpload" accept="image/*" capture="environment" />
 
       <div id="loader">⏳ Uploading image...</div>
-
       <button type="submit">Submit Feedback</button>
     </form>
 
-    <!-- Success Popup -->
     <div id="popup" class="popup">✅ Feedback submitted successfully!</div>
 
-    <!-- Average Rating -->
     <div id="avg-rating">
       <h2>⭐ Average Rating: <span id="average">N/A</span></h2>
     </div>
 
-    <!-- Filter -->
     <div class="filter-container">
       <label>Filter by Rating:</label>
       <select id="filterRating">
@@ -77,16 +71,18 @@
       </select>
     </div>
 
-    <!-- Reviews -->
     <div id="review-list"></div>
   </div>
 
-  <!-- Footer -->
   <footer class="developer-credit">
     <p>© 2025 Ramdev Dalwada | Developed by <span>Fenil</span></p>
   </footer>
 
-  <!-- Firebase Config -->
+  <!-- Image Modal -->
+  <div id="image-modal" onclick="this.style.display='none'">
+    <img id="modal-img" src="" alt="Full Image">
+  </div>
+
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAumqMP8xJyz29JIUme0xKqeHqFa89Zgpw",
@@ -100,8 +96,6 @@
     };
     firebase.initializeApp(firebaseConfig);
   </script>
-
-  <!-- Main Logic -->
   <script src="script.js"></script>
 </body>
 </html>

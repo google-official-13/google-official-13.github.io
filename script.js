@@ -8,14 +8,12 @@ const filterRating = document.getElementById("filterRating");
 const db = firebase.database().ref("feedbacks");
 const imgbbAPIKey = "3a01fad3d6c23d5bab709c94eae3b9c9";
 
-// ✅ Generate and store unique device ID
 let deviceId = localStorage.getItem("deviceId");
 if (!deviceId) {
   deviceId = crypto.randomUUID();
   localStorage.setItem("deviceId", deviceId);
 }
 
-// ✅ Firebase Auth
 let currentUser = null;
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
@@ -36,7 +34,6 @@ firebase.auth().onAuthStateChanged(user => {
   }
 });
 
-// ✅ Format time ago
 function timeAgo(date) {
   const seconds = Math.floor((new Date() - new Date(date)) / 1000);
   const intervals = { year: 31536000, month: 2592000, week: 604800, day: 86400, hour: 3600, minute: 60 };
@@ -47,13 +44,11 @@ function timeAgo(date) {
   return "Just now";
 }
 
-// ✅ Success popup
 function showPopup() {
   popup.classList.add("show");
   setTimeout(() => popup.classList.remove("show"), 3000);
 }
 
-// ✅ Submit handler
 form.addEventListener("submit", function (e) {
   e.preventDefault();
   const name = form.name.value.trim();
@@ -70,6 +65,7 @@ form.addEventListener("submit", function (e) {
     message,
     rating,
     imageUrl: null,
+    profilePic: currentUser?.photoURL || null,
     date: new Date().toISOString(),
     deviceId
   };
@@ -110,7 +106,6 @@ form.addEventListener("submit", function (e) {
   }
 });
 
-// ✅ Mood emoji based on rating
 function getMoodTag(rating) {
   if (rating >= 5) return "🌟 Loved it!";
   if (rating === 4) return "👍 Good";
@@ -118,7 +113,13 @@ function getMoodTag(rating) {
   return "👎 Needs Work";
 }
 
-// ✅ Load and display all reviews
+function enlargeImage(img) {
+  const modal = document.getElementById("image-modal");
+  const modalImg = document.getElementById("modal-img");
+  modalImg.src = img.src;
+  modal.style.display = "flex";
+}
+
 function loadReviews() {
   db.once("value", snapshot => {
     const data = snapshot.val();
@@ -154,9 +155,17 @@ function loadReviews() {
             </details>`;
         }
 
+        const avatar = entry.profilePic
+          ? `<img src="${entry.profilePic}" class="avatar" style="object-fit: cover; width: 35px; height: 35px; border-radius: 50%;">`
+          : `<div class="avatar">${entry.name.charAt(0).toUpperCase()}</div>`;
+
+        const imageTag = entry.imageUrl
+          ? `<img src="${entry.imageUrl}" class="thumbnail-img" onclick="enlargeImage(this)">`
+          : "";
+
         div.innerHTML = `
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-            <div class="avatar">${entry.name.charAt(0).toUpperCase()}</div>
+            ${avatar}
             <div>
               <strong>${entry.name}</strong><br>
               <span style="font-size: 12px; color: #888;">${entry.email}</span>
@@ -165,7 +174,7 @@ function loadReviews() {
           <p>${entry.message}</p>
           ${previousToggle}
           <p>⭐ ${entry.rating} <span class="mood-tag">${getMoodTag(entry.rating)}</span> <span class="review-time">· ${timeAgo(entry.date)}</span></p>
-          ${entry.imageUrl ? `<img src="${entry.imageUrl}" onclick="this.classList.toggle('enlarged')">` : ""}
+          ${imageTag}
           <hr>
         `;
 
@@ -176,8 +185,5 @@ function loadReviews() {
   });
 }
 
-// ✅ Filter listener
 filterRating.addEventListener("change", loadReviews);
-
-// ✅ Initial load
 loadReviews();

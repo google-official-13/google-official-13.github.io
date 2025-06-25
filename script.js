@@ -1,4 +1,6 @@
- const form = document.getElementById("feedback-form");
+// script.js – Full version with replies, likes (review & replies), edit/delete, and 5-minute rule
+
+const form = document.getElementById("feedback-form");
 const averageDisplay = document.getElementById("average");
 const reviewList = document.getElementById("review-list");
 const popup = document.getElementById("popup");
@@ -67,10 +69,11 @@ form.addEventListener("submit", function (e) {
     imageUrl: null,
     profilePic: currentUser?.photoURL || null,
     date: new Date().toISOString(),
-    deviceId
+    deviceId,
+    userId: currentUser?.uid || null,
+    likes: [],
+    replies: {}
   };
-
-  localStorage.setItem("lastFeedback", JSON.stringify(feedback));
 
   const uploadAndSave = (imageUrl = null) => {
     feedback.imageUrl = imageUrl;
@@ -84,7 +87,6 @@ form.addEventListener("submit", function (e) {
   if (imageFile) {
     const formData = new FormData();
     formData.append("image", imageFile);
-
     fetch(`https://api.imgbb.com/1/upload?key=${imgbbAPIKey}`, {
       method: "POST",
       body: formData
@@ -120,68 +122,147 @@ function enlargeImage(img) {
   modal.style.display = "flex";
 }
 
+function toggleLike(feedbackId) {
+  const ref = db.child(feedbackId).child("likes");
+  ref.once("value", snap => {
+    let likes = snap.val() || [];
+    const userKey = currentUser?.uid || deviceId;
+    const index = likes.indexOf(userKey);
+    if (index > -1) likes.splice(index, 1);
+    else likes.push(userKey);
+    ref.set(likes).then(loadReviews);
+  });
+}
+
+function toggleReplyLike(feedbackId, replyId) {
+  const ref = db.child(feedbackId).child("replies").child(replyId).child("likes");
+  ref.once("value", snap => {
+    let likes = snap.val() || [];
+    const userKey = currentUser?.uid || deviceId;
+    const index = likes.indexOf(userKey);
+    if (index > -1) likes.splice(index, 1);
+    else likes.push(userKey);
+    ref.set(likes).then(loadReviews);
+  });
+}
+
+function submitReply(feedbackId, textarea) {
+  const replyText = textarea.value.trim();
+  if (!replyText) return;
+  const reply = {
+    message: replyText,
+    name: currentUser.displayName,
+    email: currentUser.email,
+    userId: currentUser.uid,
+    profilePic: currentUser.photoURL || null,
+    date: new Date().toISOString(),
+    likes: []
+  };
+  db.child(feedbackId).child("replies").push(reply).then(loadReviews);
+}
+
+function deleteReply(feedbackId, replyId) {
+  db.child(feedbackId).child("replies").child(replyId).remove().then(loadReviews);
+}
+
+function editReply(feedbackId, replyId, oldMsg, date) {
+  const diff = (new Date() - new Date(date)) / 60000;
+  if (diff > 5) return alert("You can only edit within 5 minutes");
+  const newMsg = prompt("Edit your reply:", oldMsg);
+  if (newMsg && newMsg.trim()) {
+    db.child(feedbackId).child("replies").child(replyId).update({ message: newMsg.trim() }).then(loadReviews);
+  }
+}
+
+function escapeHTML(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 function loadReviews() {
   db.once("value", snapshot => {
     const data = snapshot.val();
     const entries = Object.entries(data || {}).map(([id, value]) => ({ id, ...value }));
     const selectedRating = parseInt(filterRating.value || "0");
 
-    const userEntries = entries.filter(e => e.deviceId === deviceId);
-    const latestReview = userEntries.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
-    const previousReview = userEntries.length > 1 ? userEntries[1] : null;
-
     let total = 0, count = 0;
     reviewList.innerHTML = "";
 
-    entries
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .forEach(entry => {
-        if (selectedRating && entry.rating < selectedRating) return;
+    entries.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(entry => {
+      if (selectedRating && entry.rating < selectedRating) return;
 
-        total += entry.rating;
-        count++;
+      total += entry.rating;
+      count++;
 
-        const div = document.createElement("div");
-        div.classList.add("review-entry");
+      const div = document.createElement("div");
+      div.classList.add("review-entry");
 
-        let previousToggle = "";
-        if (latestReview && previousReview && entry.id === latestReview.id) {
-          previousToggle = `
-            <details style="margin-top: 8px;">
-              <summary style="color: #ffcc00; cursor: pointer;">Your past review</summary>
-              <div style="font-size: 13px; margin-top: 5px; color: #bbb;">
-                <em>${previousReview.message}</em>
+      const avatar = entry.profilePic
+        ? `<img src="${entry.profilePic}" class="avatar">`
+        : `<div class="avatar">${entry.name.charAt(0).toUpperCase()}</div>`;
+
+      const imageTag = entry.imageUrl
+        ? `<img src="${entry.imageUrl}" class="thumbnail-img" onclick="enlargeImage(this)">`
+        : "";
+
+      const userKey = currentUser?.uid || deviceId;
+      const isLiked = entry.likes?.includes(userKey);
+      const likeBtn = `<button onclick="toggleLike('${entry.id}')">${isLiked ? "❤️" : "🤍"} ${entry.likes?.length || 0}</button>`;
+
+      let replySection = "";
+      if (currentUser) {
+        replySection = `
+          <div class="reply-box">
+            <textarea placeholder="Write a reply..."></textarea>
+            <button onclick="submitReply('${entry.id}', this.previousElementSibling)">📩 Reply</button>
+          </div>`;
+      }
+
+      let repliesHTML = "";
+      if (entry.replies) {
+        Object.entries(entry.replies).forEach(([rid, rep]) => {
+          const repUserKey = currentUser?.uid || deviceId;
+          const liked = rep.likes?.includes(repUserKey);
+          const likeReplyBtn = `<button onclick="toggleReplyLike('${entry.id}', '${rid}')">${liked ? "❤️" : "🤍"} ${rep.likes?.length || 0}</button>`;
+          const canEdit = currentUser && currentUser.uid === rep.userId;
+          const diff = (new Date() - new Date(rep.date)) / 60000;
+          repliesHTML += `
+            <div class="reply-entry">
+              <strong>${rep.name}</strong>: ${escapeHTML(rep.message)}
+              <span class="review-time">· ${timeAgo(rep.date)}</span>
+              <div class="reply-actions">
+                ${likeReplyBtn}
+                ${canEdit ? `
+                  ${diff < 5 ? `<button onclick="editReply('${entry.id}', '${rid}', '${rep.message.replace(/'/g, "\\'")}', '${rep.date}')">✏️ Edit</button>` : ""}
+                  <button onclick="deleteReply('${entry.id}', '${rid}')">🗑️ Delete</button>` : ""}
               </div>
-            </details>`;
-        }
+            </div>`;
+        });
+      }
 
-        const avatar = entry.profilePic
-          ? `<img src="${entry.profilePic}" class="avatar" style="object-fit: cover; width: 35px; height: 35px; border-radius: 50%;">`
-          : `<div class="avatar">${entry.name.charAt(0).toUpperCase()}</div>`;
-
-        const imageTag = entry.imageUrl
-          ? `<img src="${entry.imageUrl}" class="thumbnail-img" onclick="enlargeImage(this)">`
-          : "";
-
-        div.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-            ${avatar}
-            <div>
-              <strong>${entry.name}</strong><br>
-              <span style="font-size: 12px; color: #888;">${entry.email}</span>
-            </div>
+      div.innerHTML = `
+        <div class="review-header">
+          ${avatar}
+          <div class="review-user-info">
+            <span class="name">${entry.name}</span>
+            <span class="email">${entry.email}</span>
           </div>
-          <p>${entry.message}</p>
-          ${previousToggle}
-          <p>⭐ ${entry.rating} <span class="mood-tag">${getMoodTag(entry.rating)}</span> <span class="review-time">· ${timeAgo(entry.date)}</span></p>
-          ${imageTag}
-          <hr>
-        `;
+        </div>
+        <p>${escapeHTML(entry.message)}</p>
+        <p>⭐ ${entry.rating} <span class="mood-tag">${getMoodTag(entry.rating)}</span> <span class="review-time">· ${timeAgo(entry.date)}</span></p>
+        ${imageTag}
+        <div class="review-actions">${likeBtn}</div>
+        <div class="reply-section">
+          ${repliesHTML}
+          ${replySection}
+        </div>
+      `;
 
-        reviewList.appendChild(div);
-      });
+      reviewList.appendChild(div);
+    });
 
-    averageDisplay.textContent = count ? (total / count).toFixed(1) + " / 5" : "N/A";
+    averageDisplay.textContent = count ? `${(total / count).toFixed(1)} / 5 (${count} reviews)` : "N/A";
   });
 }
 

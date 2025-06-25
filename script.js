@@ -1,5 +1,3 @@
-// script.js – Full version with replies, likes, edit/delete, and 5-minute rule
-
 const form = document.getElementById("feedback-form");
 const averageDisplay = document.getElementById("average");
 const reviewList = document.getElementById("review-list");
@@ -29,70 +27,96 @@ firebase.auth().onAuthStateChanged(user => {
     document.getElementById("user-info").style.display = "block";
     document.getElementById("loginBtn").style.display = "none";
   } else {
-    document.getElementById("loginBtn").onclick = () => {
+    document.getElementById("loginBtn").addEventListener("click", () => {
       const provider = new firebase.auth.GoogleAuthProvider();
       firebase.auth().signInWithPopup(provider).catch(console.error);
-    };
+    });
   }
 });
 
 function timeAgo(date) {
-  const seconds = Math.floor((Date.now() - new Date(date)) / 1000);
+  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
   const intervals = { year: 31536000, month: 2592000, week: 604800, day: 86400, hour: 3600, minute: 60 };
-  for (let u in intervals) {
-    const v = Math.floor(seconds / intervals[u]);
-    if (v >= 1) return `${v} ${u}${v>1?"s":""} ago`;
+  for (let unit in intervals) {
+    const value = Math.floor(seconds / intervals[unit]);
+    if (value >= 1) return `${value} ${unit}${value > 1 ? "s" : ""} ago`;
   }
   return "Just now";
 }
 
 function showPopup() {
   popup.classList.add("show");
-  setTimeout(()=>popup.classList.remove("show"),3000);
+  setTimeout(() => popup.classList.remove("show"), 3000);
 }
 
-form.addEventListener("submit", e => {
+form.addEventListener("submit", function (e) {
   e.preventDefault();
   const name = form.name.value.trim();
   const email = form.email.value.trim();
   const message = form.message.value.trim();
-  const rating = +form.rating.value;
-  const file = document.getElementById("imageUpload").files[0];
+  const rating = parseInt(form.rating.value);
+  const imageFile = document.getElementById("imageUpload").files[0];
+
   loader.style.display = "block";
 
-  const fb = {
-    name, email, message, rating,
+  const feedback = {
+    name,
+    email,
+    message,
+    rating,
     imageUrl: null,
     profilePic: currentUser?.photoURL || null,
     date: new Date().toISOString(),
     deviceId,
     userId: currentUser?.uid || null,
-    likes: [], replies: {}
+    likes: [],
+    replies: {}
   };
 
-  const save = url => {
-    fb.imageUrl = url;
-    db.push(fb);
+  const uploadAndSave = (imageUrl = null) => {
+    feedback.imageUrl = imageUrl;
+    db.push(feedback);
     form.reset();
     loader.style.display = "none";
     showPopup();
-    setTimeout(loadReviews,500);
+    setTimeout(loadReviews, 500);
   };
 
-  if (file) {
-    const fd = new FormData();
-    fd.append("image", file);
-    fetch(`https://api.imgbb.com/1/upload?key=${imgbbAPIKey}`,{ method:"POST", body:fd })
-      .then(r=>r.json())
-      .then(d=> d.success ? save(d.data.url) : (loader.style.display="none", alert("Image upload failed.")))
-      .catch(_=>{ loader.style.display="none"; alert("Image upload failed."); });
-  } else save(null);
+  if (imageFile) {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+    fetch(`https://api.imgbb.com/1/upload?key=${imgbbAPIKey}`, {
+      method: "POST",
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) uploadAndSave(data.data.url);
+        else {
+          loader.style.display = "none";
+          alert("Image upload failed.");
+        }
+      })
+      .catch(() => {
+        loader.style.display = "none";
+        alert("Image upload failed.");
+      });
+  } else {
+    uploadAndSave();
+  }
 });
 
+function getMoodTag(rating) {
+  if (rating >= 5) return "🌟 Loved it!";
+  if (rating === 4) return "👍 Good";
+  if (rating === 3) return "😐 Okay";
+  return "👎 Needs Work";
+}
+
 function enlargeImage(img) {
-  const modal = document.getElementById("image-modal"),
-        mi = document.getElementById("modal-img");
-  mi.src = img.src;
+  const modal = document.getElementById("image-modal");
+  const modalImg = document.getElementById("modal-img");
+  modalImg.src = img.src;
   modal.style.display = "flex";
 }
 
@@ -100,125 +124,141 @@ function closeModal() {
   document.getElementById("image-modal").style.display = "none";
 }
 
-function toggleLike(id) {
-  const ref = db.child(id).child("likes");
-  ref.once("value", s => {
-    const arr = s.val()||[], key = currentUser?.uid||deviceId, idx=arr.indexOf(key);
-    idx>-1 ? arr.splice(idx,1):arr.push(key);
-    ref.set(arr).then(loadReviews);
+function toggleLike(feedbackId) {
+  const ref = db.child(feedbackId).child("likes");
+  ref.once("value", snap => {
+    let likes = snap.val() || [];
+    const uid = currentUser?.uid || deviceId;
+    const index = likes.indexOf(uid);
+    if (index > -1) likes.splice(index, 1);
+    else likes.push(uid);
+    ref.set(likes).then(loadReviews);
   });
 }
 
 function toggleReplyBox(btn) {
   const box = btn.closest(".review-entry").querySelector(".reply-box");
-  box.style.display = box.style.display==="block"?"none":"block";
+  if (box) box.style.display = box.style.display === "block" ? "none" : "block";
 }
 
-function submitReply(id, ta) {
-  const txt = ta.value.trim();
-  if (!txt) return;
-  const rep = {
-    message: txt,
+function submitReply(feedbackId, textarea) {
+  const replyText = textarea.value.trim();
+  if (!replyText) return;
+  const reply = {
+    message: replyText,
     name: currentUser.displayName,
     email: currentUser.email,
     userId: currentUser.uid,
-    profilePic: currentUser.photoURL||null,
+    profilePic: currentUser.photoURL || null,
     date: new Date().toISOString(),
     likes: []
   };
-  db.child(id).child("replies").push(rep).then(loadReviews);
+  db.child(feedbackId).child("replies").push(reply).then(loadReviews);
 }
 
-function editReply(id, rid, old, d) {
-  if ((Date.now()-new Date(d))/60000 > 5) return alert("Can only edit within 5 min");
-  const nw = prompt("Edit your reply:", old);
-  if (nw?.trim()) db.child(id).child("replies").child(rid).update({ message:nw.trim() }).then(loadReviews);
+function deleteReply(feedbackId, replyId) {
+  db.child(feedbackId).child("replies").child(replyId).remove().then(loadReviews);
 }
 
-function deleteReply(id, rid) {
-  db.child(id).child("replies").child(rid).remove().then(loadReviews);
+function editReply(feedbackId, replyId, oldMsg, date) {
+  const diff = (new Date() - new Date(date)) / 60000;
+  if (diff > 5) return alert("You can only edit within 5 minutes");
+  const newMsg = prompt("Edit your reply:", oldMsg);
+  if (newMsg && newMsg.trim()) {
+    db.child(feedbackId).child("replies").child(replyId).update({ message: newMsg.trim() }).then(loadReviews);
+  }
+}
+
+function escapeQuotes(text) {
+  return text.replace(/'/g, "\\'").replace(/"/g, "&quot;");
 }
 
 function loadReviews() {
-  db.once("value", snap => {
-    const data = snap.val()||{}, sel=+filterRating.value||0;
-    let total=0, cnt=0;
-    reviewList.innerHTML="";
-    Object.entries(data)
-      .sort(([,a],[,b])=>new Date(b.date)-new Date(a.date))
-      .forEach(([id, e])=>{
-        if(sel && e.rating<sel) return;
-        total += e.rating; cnt++;
-        const userKey = currentUser?.uid||deviceId,
-              liked = e.likes?.includes(userKey),
-              likeIcon = liked?"fas":"far",
-              likeBtn = `<button class="like-btn" onclick="toggleLike('${id}')">
-                           <i class="${likeIcon} fa-heart"></i> ${e.likes?.length||0}
-                         </button>`,
-              replyBtn = currentUser
-                         ? `<button class="reply-btn" onclick="toggleReplyBox(this)">
-                              <i class="fas fa-reply"></i> Reply
-                            </button>`
-                         : "";
+  db.once("value", snapshot => {
+    const data = snapshot.val();
+    const entries = Object.entries(data || {}).map(([id, value]) => ({ id, ...value }));
+    const selectedRating = parseInt(filterRating.value || "0");
 
-        let repliesHTML = "";
-        for(const [rid, r] of Object.entries(e.replies||{})) {
-          const can = currentUser?.uid===r.userId,
-                diff = (Date.now()-new Date(r.date))/60000,
-                editBtn = can && diff<5
-                        ? `<button class="edit-btn" onclick="editReply('${id}','${rid}','${r.message}','${r.date}')">✏️</button>`
-                        : "",
-                delBtn = can
-                       ? `<button class="delete-btn" onclick="deleteReply('${id}','${rid}')">🗑️</button>`
-                       : "";
+    let total = 0, count = 0;
+    reviewList.innerHTML = "";
+
+    entries.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(entry => {
+      if (selectedRating && entry.rating < selectedRating) return;
+
+      total += entry.rating;
+      count++;
+
+      const div = document.createElement("div");
+      div.classList.add("review-entry");
+
+      const avatar = entry.profilePic
+        ? `<img src="${entry.profilePic}" class="avatar">`
+        : `<div class="avatar">${entry.name.charAt(0).toUpperCase()}</div>`;
+
+      const imageTag = entry.imageUrl
+        ? `<img src="${entry.imageUrl}" class="thumbnail" onclick="enlargeImage(this)">`
+        : "";
+
+      const uid = currentUser?.uid || deviceId;
+      const isLiked = entry.likes?.includes(uid);
+      const likeIcon = isLiked ? "fas" : "far";
+      const likeBtn = `<button class="like-btn" onclick="toggleLike('${entry.id}')"><i class="${likeIcon} fa-heart"></i> ${entry.likes?.length || 0}</button>`;
+
+      const replyBtn = currentUser
+        ? `<button class="reply-btn" onclick="toggleReplyBox(this)"><i class="fas fa-reply"></i> Reply</button>`
+        : "";
+
+      let repliesHTML = "";
+      if (entry.replies) {
+        Object.entries(entry.replies).forEach(([rid, rep]) => {
+          const canEdit = currentUser && currentUser.uid === rep.userId;
+          const diff = (new Date() - new Date(rep.date)) / 60000;
           repliesHTML += `
             <div class="reply-entry">
-              <strong>${r.name}</strong>: ${r.message}
-              <span class="review-time">· ${timeAgo(r.date)}</span>
-              <div class="reply-actions">${editBtn}${delBtn}</div>
+              <strong>${rep.name}</strong>: ${rep.message}
+              <span class="review-time">· ${timeAgo(rep.date)}</span>
+              ${canEdit ? `
+                ${diff < 5 ? `<button class="edit-btn" onclick="editReply('${entry.id}', '${rid}', '${escapeQuotes(rep.message)}', '${rep.date}')">✏️</button>` : ""}
+                <button class="delete-btn" onclick="deleteReply('${entry.id}', '${rid}')">🗑️</button>` : ""}
             </div>`;
-        }
+        });
+      }
 
-        const replyBox = currentUser
-          ? `<div class="reply-box">
-               <textarea placeholder="Write a reply..."></textarea>
-               <button onclick="submitReply('${id}', this.previousElementSibling)">Send</button>
-             </div>`
-          : "";
+      const replyBox = currentUser
+        ? `<div class="reply-box" style="display:none;">
+             <textarea placeholder="Write a reply..."></textarea>
+             <button onclick="submitReply('${entry.id}', this.previousElementSibling)">Send</button>
+           </div>`
+        : "";
 
-        const avatar = e.profilePic
-                     ? `<img src="${e.profilePic}" class="avatar">`
-                     : `<div class="avatar">${e.name[0].toUpperCase()}</div>`;
-        const thumb = e.imageUrl
-                    ? `<img src="${e.imageUrl}" class="thumbnail" onclick="enlargeImage(this)">`
-                    : "";
-
-        const div = document.createElement("div");
-        div.className = "review-entry";
-        div.innerHTML = `
-          <div class="review-header">
-            ${avatar}
-            <div class="review-user-info">
-              <span class="name">${e.name}</span>
-              <span class="email">${e.email}</span>
-            </div>
+      div.innerHTML = `
+        <div class="review-header">
+          ${avatar}
+          <div class="review-user-info">
+            <span class="name">${entry.name}</span>
+            <span class="email">${entry.email}</span>
           </div>
-          <p>${e.message}</p>
-          <p>⭐ ${e.rating} <span class="mood-tag">${getMoodTag(e.rating)}</span>
-             <span class="review-time">· ${timeAgo(e.date)}</span></p>
-          ${thumb}
-          <div class="reply-actions">${likeBtn}${replyBtn}</div>
-          <div class="reply-section">${repliesHTML}${replyBox}</div>
-        `;
-        reviewList.appendChild(div);
-      });
+        </div>
+        <p>${entry.message}</p>
+        <p>⭐ ${entry.rating} <span class="mood-tag">${getMoodTag(entry.rating)}</span> <span class="review-time">· ${timeAgo(entry.date)}</span></p>
+        ${imageTag}
+        <div class="reply-actions">
+          ${likeBtn}
+          ${replyBtn}
+        </div>
+        <div class="reply-section">
+          ${repliesHTML}
+          ${replyBox}
+        </div>
+      `;
 
-    averageDisplay.textContent = cnt
-      ? `${(total/cnt).toFixed(1)} / 5 (${cnt} reviews)`
-      : "N/A";
+      reviewList.appendChild(div);
+    });
+
+    averageDisplay.textContent = count ? `${(total / count).toFixed(1)} / 5 (${count} reviews)` : "N/A";
   });
 }
 
+document.getElementById("image-modal").addEventListener("click", closeModal);
 filterRating.addEventListener("change", loadReviews);
 loadReviews();
-document.getElementById("image-modal").onclick = closeModal;

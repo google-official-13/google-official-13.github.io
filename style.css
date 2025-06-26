@@ -90,6 +90,30 @@ button:hover {
   background: #ffb300;
 }
 
+/* Camera upload button */
+.custom-upload-btn {
+  display: inline-block;
+  margin-top: 8px;
+  background: rgba(255,255,255,0.1);
+  color: #FFC107;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.custom-upload-btn i {
+  margin-right: 6px;
+}
+#imageUpload {
+  display: none;
+}
+
+#loader {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #ccc;
+}
+
 .stars {
   display: flex;
   justify-content: center;
@@ -204,27 +228,11 @@ button:hover {
 }
 
 /* Review content */
-.review-entry p {
-  margin-top: 8px;
-  font-size: 15px;
-  line-height: 1.4;
-}
-
-/* Footer section (like/reply/mood/timestamp) */
-.review-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
-.mood-tag {
-  color: #FFC107;
-  font-size: 14px;
-}
-.review-time {
-  font-size: 12px;
-  color: #ccc;
+.review-entry .emoji-feedback {
+  font-size: 24px !important;
+  margin: 16px 0;
+  text-align: center;
+  letter-spacing: 1px;
 }
 
 /* Thumbnail */
@@ -237,40 +245,12 @@ button:hover {
   cursor: pointer;
 }
 
-/* Modal */
-#image-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0,0,0,0.85);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-#image-modal img {
-  max-width: 90%;
-  max-height: 90vh;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.5);
-  animation: zoomIn .3s ease;
-}
-#image-modal .close-btn {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  font-size: 24px;
-  color: #fff;
-  cursor: pointer;
-}
-
 /* Reply Actions */
 .reply-actions {
   display: flex;
   gap: 12px;
-  margin-top: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
 }
 .reply-btn, .like-btn {
   background: none;
@@ -284,6 +264,23 @@ button:hover {
 }
 .reply-btn i, .like-btn i {
   font-size: 16px;
+}
+
+/* Footer section (mood/timestamp) - moved lower */
+.review-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 18px;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+.mood-tag {
+  color: #FFC107;
+}
+.review-time {
+  font-size: 12px;
+  color: #ccc;
 }
 
 /* Reply Box & Entries */
@@ -301,10 +298,10 @@ button:hover {
   color: #eee;
   position: relative;
 }
-.reply-entry .reply-actions-inline {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+.reply-entry .review-time {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 11px;
 }
 .reply-box {
   display: none;
@@ -364,6 +361,35 @@ button:hover {
   background: #444;
 }
 
+/* Modal */
+#image-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+#image-modal img {
+  max-width: 90%;
+  max-height: 90vh;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  animation: zoomIn .3s ease;
+}
+#image-modal .close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 24px;
+  color: #fff;
+  cursor: pointer;
+}
+
 /* Popup */
 .popup {
   position: fixed;
@@ -384,20 +410,6 @@ button:hover {
   transform: translateY(0);
 }
 
-/* Animations */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes zoomIn {
-  from { transform: scale(0.8); opacity: 0; }
-  to   { transform: scale(1); opacity: 1; }
-}
-
 /* Developer Footer */
 .developer-credit {
   margin-top: 40px;
@@ -410,4 +422,18 @@ button:hover {
 .developer-credit span {
   color: #FFC107;
   font-weight: 600;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes zoomIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
 }

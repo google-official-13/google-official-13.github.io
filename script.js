@@ -173,10 +173,38 @@ function escapeQuotes(text) {
   return text.replace(/'/g, "\\'").replace(/"/g, "&quot;");
 }
 
+function toggleMenu(btn) {
+  const menu = btn.nextElementSibling;
+  document.querySelectorAll(".menu-dropdown").forEach(m => {
+    if (m !== menu) m.style.display = "none";
+  });
+  menu.style.display = menu.style.display === "block" ? "none" : "block";
+  document.addEventListener("click", function handler(e) {
+    if (!menu.contains(e.target) && !btn.contains(e.target)) {
+      menu.style.display = "none";
+      document.removeEventListener("click", handler);
+    }
+  });
+}
+
 function loadReviews() {
   db.once("value", snapshot => {
     const data = snapshot.val();
-    const entries = Object.entries(data || {}).map(([id, value]) => ({ id, ...value }));
+    if (!data) {
+      reviewList.innerHTML = "";
+      averageDisplay.textContent = "N/A";
+      return;
+    }
+
+    const entriesMap = {};
+    Object.entries(data).forEach(([id, val]) => {
+      const key = val.userId || val.deviceId;
+      if (!entriesMap[key] || new Date(val.date) > new Date(entriesMap[key].date)) {
+        entriesMap[key] = { id, ...val };
+      }
+    });
+
+    const entries = Object.values(entriesMap);
     const selectedRating = parseInt(filterRating.value || "0");
 
     let total = 0, count = 0;
@@ -213,13 +241,19 @@ function loadReviews() {
         Object.entries(entry.replies).forEach(([rid, rep]) => {
           const canEdit = currentUser && currentUser.uid === rep.userId;
           const diff = (new Date() - new Date(rep.date)) / 60000;
+          const menu = canEdit ? `
+            <div class="three-dot-menu">
+              <i class="fas fa-ellipsis-v" onclick="toggleMenu(this)"></i>
+              <div class="menu-dropdown">
+                ${diff < 5 ? `<button onclick="editReply('${entry.id}', '${rid}', '${escapeQuotes(rep.message)}', '${rep.date}')">Edit</button>` : ""}
+                <button onclick="deleteReply('${entry.id}', '${rid}')">Delete</button>
+              </div>
+            </div>` : "";
           repliesHTML += `
             <div class="reply-entry">
+              ${menu}
               <strong>${rep.name}</strong>: ${rep.message}
               <span class="review-time">· ${timeAgo(rep.date)}</span>
-              ${canEdit ? `
-                ${diff < 5 ? `<button class="edit-btn" onclick="editReply('${entry.id}', '${rid}', '${escapeQuotes(rep.message)}', '${rep.date}')">✏️</button>` : ""}
-                <button class="delete-btn" onclick="deleteReply('${entry.id}', '${rid}')">🗑️</button>` : ""}
             </div>`;
         });
       }
@@ -263,7 +297,10 @@ function loadReviews() {
       reviewList.appendChild(div);
     });
 
-    averageDisplay.textContent = count ? `${(total / count).toFixed(1)} / 5 (${count} reviews)` : "N/A";
+    averageDisplay.textContent = count ? `${(total / count).toFixed(1)} / 5` : "N/A";
+document.getElementById("reviewCount").textContent = count ? `${count} Reviews` : "";
+
+    loader.style.display = "none";
   });
 }
 

@@ -49,8 +49,7 @@
       <label for="imageUpload" class="custom-upload-btn">
         <i class="fas fa-camera"></i> Upload Image
       </label>
-      <!-- ✅ Default to gallery only -->
-      <input type="file" id="imageUpload" accept="image/*" />
+      <input type="file" id="imageUpload" accept="image/*" capture="environment" />
 
       <div id="loader">⏳ Uploading image...</div>
       <button type="submit">Submit Feedback</button>
@@ -60,7 +59,9 @@
 
     <!-- Average Rating and Count -->
     <div id="avg-rating">
-      <h2>⭐ Average Rating: <span id="average">N/A</span> <span id="reviewCount" style="font-size: 16px; color: #ccc;"></span></h2>
+      <h2>⭐ Average Rating: <span id="average">N/A</span></h2>
+<p id="reviewCount" style="font-size: 16px; color: #ccc; margin-top: 4px;"></p>
+
     </div>
 
     <!-- Rating Filter -->

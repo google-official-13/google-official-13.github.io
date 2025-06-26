@@ -9,6 +9,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -19,13 +20,11 @@
       <p>📞 <a href="tel:+919033561438" class="phone-link">+91 90335 61438</a></p>
     </div>
 
-    <!-- Google Login -->
     <div id="login-section">
       <button id="loginBtn">🔐 Sign in with Google</button>
       <p id="user-info" style="display:none;"></p>
     </div>
 
-    <!-- Feedback Form -->
     <form id="feedback-form" style="display:none;">
       <label>Name:</label>
       <input type="text" name="name" required>
@@ -49,7 +48,7 @@
       <label for="imageUpload" class="custom-upload-btn">
         <i class="fas fa-camera"></i> Upload Image
       </label>
-      <input type="file" id="imageUpload" accept="image/*" capture="environment" />
+      <input type="file" id="imageUpload" accept="image/*" />
 
       <div id="loader">⏳ Uploading image...</div>
       <button type="submit">Submit Feedback</button>
@@ -57,14 +56,11 @@
 
     <div id="popup" class="popup">✅ Feedback submitted successfully!</div>
 
-    <!-- Average Rating and Count -->
     <div id="avg-rating">
       <h2>⭐ Average Rating: <span id="average">N/A</span></h2>
-<p id="reviewCount" style="font-size: 16px; color: #ccc; margin-top: 4px;"></p>
-
+      <p id="reviewCount" style="font-size: 16px; color: #ccc; margin-top: 4px;"></p>
     </div>
 
-    <!-- Rating Filter -->
     <div class="filter-container">
       <label>Filter by Rating:</label>
       <select id="filterRating">
@@ -75,22 +71,18 @@
       </select>
     </div>
 
-    <!-- Review List -->
     <div id="review-list"></div>
   </div>
 
-  <!-- Developer Footer -->
   <footer class="developer-credit">
     <p>© 2025 Ramdev Dalwada | Developed by <span>Fenil</span></p>
   </footer>
 
-  <!-- Image Modal -->
   <div id="image-modal" onclick="this.style.display='none'">
     <img id="modal-img" src="" alt="Full Image">
     <span class="close-btn"><i class="fas fa-times"></i></span>
   </div>
 
-  <!-- Firebase Config -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAumqMP8xJyz29JIUme0xKqeHqFa89Zgpw",
@@ -103,9 +95,9 @@
       measurementId: "G-NV965T81WZ"
     };
     firebase.initializeApp(firebaseConfig);
+    emailjs.init("b2bU5JAhe0VtZv5al");
   </script>
 
-  <!-- Script -->
   <script src="script.js"></script>
 </body>
 </html>

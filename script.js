@@ -138,10 +138,27 @@ function toggleLike(feedbackId) {
 
 function toggleReplyBox(btn) {
   const box = btn.closest(".review-entry").querySelector(".reply-box");
-  if (box) box.style.display = box.style.display === "block" ? "none" : "block";
+  if (box) {
+    box.style.display = box.style.display === "block" ? "none" : "block";
+    const textarea = box.querySelector("textarea");
+    setTimeout(() => {
+      textarea.focus();
+      textarea.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+  }
 }
 
-function submitReply(feedbackId, textarea) {
+function sendEmail(to, msg, sender) {
+  emailjs.send("service_exqnwp4", "template_abc123", {
+    to_email: to,
+    message: msg,
+    sender_name: sender
+  }, "b2bU5JAhe0VtZv5al").then(() => {
+    console.log("Email sent!");
+  }).catch(console.error);
+}
+
+function submitReply(feedbackId, textarea, parentReplyId = null, originalEmail = "") {
   const replyText = textarea.value.trim();
   if (!replyText) return;
   const reply = {
@@ -151,21 +168,38 @@ function submitReply(feedbackId, textarea) {
     userId: currentUser.uid,
     profilePic: currentUser.photoURL || null,
     date: new Date().toISOString(),
-    likes: []
+    likes: [],
+    replies: {}
   };
-  db.child(feedbackId).child("replies").push(reply).then(loadReviews);
+
+  const ref = parentReplyId
+    ? db.child(feedbackId).child("replies").child(parentReplyId).child("replies")
+    : db.child(feedbackId).child("replies");
+
+  ref.push(reply).then(() => {
+    if (originalEmail && currentUser.email !== originalEmail) {
+      sendEmail(originalEmail, replyText, currentUser.displayName);
+    }
+    loadReviews();
+  });
 }
 
-function deleteReply(feedbackId, replyId) {
-  db.child(feedbackId).child("replies").child(replyId).remove().then(loadReviews);
+function deleteReply(feedbackId, replyId, parentId = null) {
+  const ref = parentId
+    ? db.child(feedbackId).child("replies").child(parentId).child("replies").child(replyId)
+    : db.child(feedbackId).child("replies").child(replyId);
+  ref.remove().then(loadReviews);
 }
 
-function editReply(feedbackId, replyId, oldMsg, date) {
+function editReply(feedbackId, replyId, oldMsg, date, parentId = null) {
   const diff = (new Date() - new Date(date)) / 60000;
   if (diff > 5) return alert("You can only edit within 5 minutes");
   const newMsg = prompt("Edit your reply:", oldMsg);
   if (newMsg && newMsg.trim()) {
-    db.child(feedbackId).child("replies").child(replyId).update({ message: newMsg.trim() }).then(loadReviews);
+    const ref = parentId
+      ? db.child(feedbackId).child("replies").child(parentId).child("replies").child(replyId)
+      : db.child(feedbackId).child("replies").child(replyId);
+    ref.update({ message: newMsg.trim() }).then(loadReviews);
   }
 }
 
@@ -185,6 +219,36 @@ function toggleMenu(btn) {
       document.removeEventListener("click", handler);
     }
   });
+}
+
+function renderReplies(repliesObj, feedbackId, parentId = null, originalEmail = "") {
+  let html = "";
+  for (const [rid, rep] of Object.entries(repliesObj || {})) {
+    const canEdit = currentUser && currentUser.uid === rep.userId;
+    const diff = (new Date() - new Date(rep.date)) / 60000;
+    const menu = canEdit ? `
+      <div class="three-dot-menu">
+        <i class="fas fa-ellipsis-v" onclick="toggleMenu(this)"></i>
+        <div class="menu-dropdown">
+          ${diff < 5 ? `<button onclick="editReply('${feedbackId}', '${rid}', '${escapeQuotes(rep.message)}', '${rep.date}', '${parentId || ""}')">Edit</button>` : ""}
+          <button onclick="deleteReply('${feedbackId}', '${rid}', '${parentId || ""}')">Delete</button>
+        </div>
+      </div>` : "";
+    const nestedHTML = renderReplies(rep.replies, feedbackId, rid, rep.email);
+    html += `
+      <div class="reply-entry">
+        ${menu}
+        <strong>${rep.name}</strong>: ${rep.message}
+        <span class="review-time">· ${timeAgo(rep.date)}</span>
+        <div class="reply-box" style="display:none;">
+          <textarea placeholder="Write a reply..."></textarea>
+          <button onclick="submitReply('${feedbackId}', this.previousElementSibling, '${rid}', '${rep.email}')">Send</button>
+        </div>
+        <button class="reply-btn nested" onclick="toggleReplyBox(this)"><i class="fas fa-reply"></i></button>
+        ${nestedHTML}
+      </div>`;
+  }
+  return html;
 }
 
 function loadReviews() {
@@ -230,43 +294,24 @@ function loadReviews() {
       const uid = currentUser?.uid || deviceId;
       const isLiked = entry.likes?.includes(uid);
       const likeIcon = isLiked ? "fas" : "far";
-      const likeBtn = `<button class="like-btn" onclick="toggleLike('${entry.id}')"><i class="${likeIcon} fa-heart"></i> ${entry.likes?.length || 0}</button>`;
+
+      const likeBtn = `
+        <div class="like-circle" onclick="toggleLike('${entry.id}')">
+          <i class="${likeIcon} fa-thumbs-up"></i>
+          <span>${entry.likes?.length || 0}</span>
+        </div>`;
 
       const replyBtn = currentUser
-        ? `<button class="reply-btn" onclick="toggleReplyBox(this)"><i class="fas fa-reply"></i> Reply</button>`
+        ? `<button class="reply-btn main" onclick="toggleReplyBox(this)"><i class="fas fa-reply"></i></button>`
         : "";
 
-      let repliesHTML = "";
-      if (entry.replies) {
-        Object.entries(entry.replies).forEach(([rid, rep]) => {
-          const canEdit = currentUser && currentUser.uid === rep.userId;
-          const diff = (new Date() - new Date(rep.date)) / 60000;
-          const menu = canEdit ? `
-            <div class="three-dot-menu">
-              <i class="fas fa-ellipsis-v" onclick="toggleMenu(this)"></i>
-              <div class="menu-dropdown">
-                ${diff < 5 ? `<button onclick="editReply('${entry.id}', '${rid}', '${escapeQuotes(rep.message)}', '${rep.date}')">Edit</button>` : ""}
-                <button onclick="deleteReply('${entry.id}', '${rid}')">Delete</button>
-              </div>
-            </div>` : "";
-          repliesHTML += `
-            <div class="reply-entry">
-              ${menu}
-              <strong>${rep.name}</strong>: ${rep.message}
-              <span class="review-time">· ${timeAgo(rep.date)}</span>
-            </div>`;
-        });
-      }
+      const repliesHTML = renderReplies(entry.replies, entry.id, null, entry.email);
 
       const replyBox = currentUser
         ? `<div class="reply-box" style="display:none;">
              <textarea placeholder="Write a reply..."></textarea>
-             <button onclick="submitReply('${entry.id}', this.previousElementSibling)">Send</button>
-           </div>`
-        : "";
-
-      const emojiOnly = /^[\p{Emoji}\s]+$/u.test(entry.message) && entry.message.length <= 8;
-      const messageClass = emojiOnly ? "emoji-feedback" : "";
+             <button onclick="submitReply('${entry.id}', this.previousElementSibling, null, '${entry.email}')">Send</button>
+           </div>` : "";
 
       div.innerHTML = `
         <div class="review-header">
@@ -276,29 +321,24 @@ function loadReviews() {
             <span class="email">${entry.email}</span>
           </div>
         </div>
-        <div class="${messageClass}" style="margin: 10px 0; font-size: ${emojiOnly ? "22px" : "15px"};">
-          ${entry.message}
-        </div>
+        <div style="margin: 10px 0;">${entry.message}</div>
         ${imageTag}
-        <div class="reply-actions">
-          ${likeBtn}
-          ${replyBtn}
-        </div>
+        ${likeBtn}
         <div class="review-footer">
           <span class="mood-tag">${getMoodTag(entry.rating)}</span>
           <span class="review-time">${timeAgo(entry.date)}</span>
+          ${replyBtn}
         </div>
         <div class="reply-section">
           ${repliesHTML}
           ${replyBox}
         </div>
       `;
-
       reviewList.appendChild(div);
     });
 
     averageDisplay.textContent = count ? `${(total / count).toFixed(1)} / 5` : "N/A";
-document.getElementById("reviewCount").textContent = count ? `${count} Reviews` : "";
+    document.getElementById("reviewCount").textContent = count ? `${count} Reviews` : "";
 
     loader.style.display = "none";
   });

@@ -243,7 +243,7 @@ button:hover {
   cursor: pointer;
 }
 
-/* Reply actions (reply button aligned right) */
+/* Reply actions */
 .reply-actions {
   display: flex;
   justify-content: flex-end;
@@ -268,7 +268,7 @@ button:hover {
   transform: scale(1.3);
 }
 
-/* Floating Like Circle */
+/* Like Circle */
 .like-circle {
   position: absolute;
   bottom: -14px;
@@ -289,7 +289,7 @@ button:hover {
   margin-right: 4px;
 }
 
-/* Review Footer */
+/* Footer */
 .review-footer {
   display: flex;
   justify-content: space-between;
@@ -460,3 +460,4 @@ button:hover {
   from { transform: scale(0.8); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
 }
+      

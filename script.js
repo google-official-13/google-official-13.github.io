@@ -161,6 +161,7 @@ function toggleReplyBox(btn) {
   }
 }
 
+// ✅ EmailJS reply notification
 function sendEmail(to, msg, sender) {
   emailjs.send("service_exqnwp4", "template_abc123", {
     to_email: to,

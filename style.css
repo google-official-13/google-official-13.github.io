@@ -111,6 +111,7 @@ button:hover {
   margin-top: 10px;
   font-size: 14px;
   color: #ccc;
+  display: none;
 }
 
 .stars {
@@ -207,8 +208,8 @@ button:hover {
   color: #000;
 }
 .avatar img {
-  width: 35px;
-  height: 35px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
@@ -226,7 +227,6 @@ button:hover {
   word-break: break-word;
 }
 
-/* Message styling */
 .review-entry .emoji-feedback {
   font-size: 24px !important;
   margin: 16px 0;
@@ -241,31 +241,6 @@ button:hover {
   border-radius: 6px;
   margin-top: 10px;
   cursor: pointer;
-}
-
-/* Reply actions */
-.reply-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 14px;
-  position: relative;
-}
-.reply-btn {
-  background: none;
-  border: none;
-  color: #FFC107;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-}
-.reply-btn i {
-  font-size: 16px;
-  transition: transform 0.2s ease;
-}
-.reply-btn:hover i {
-  transform: scale(1.3);
 }
 
 /* Like Circle */
@@ -289,7 +264,7 @@ button:hover {
   margin-right: 4px;
 }
 
-/* Footer */
+/* Review Footer */
 .review-footer {
   display: flex;
   justify-content: space-between;
@@ -433,7 +408,7 @@ button:hover {
   transform: translateY(0);
 }
 
-/* Developer Footer */
+/* Footer */
 .developer-credit {
   margin-top: 40px;
   padding: 15px;
@@ -460,4 +435,3 @@ button:hover {
   from { transform: scale(0.8); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
 }
-      

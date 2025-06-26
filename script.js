@@ -1,3 +1,4 @@
+// ✅ DOM elements
 const form = document.getElementById("feedback-form");
 const averageDisplay = document.getElementById("average");
 const reviewList = document.getElementById("review-list");
@@ -8,12 +9,14 @@ const filterRating = document.getElementById("filterRating");
 const db = firebase.database().ref("feedbacks");
 const imgbbAPIKey = "3a01fad3d6c23d5bab709c94eae3b9c9";
 
+// ✅ Unique device ID fallback
 let deviceId = localStorage.getItem("deviceId");
 if (!deviceId) {
   deviceId = crypto.randomUUID();
   localStorage.setItem("deviceId", deviceId);
 }
 
+// ✅ Firebase auth
 let currentUser = null;
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
@@ -49,6 +52,7 @@ function showPopup() {
   setTimeout(() => popup.classList.remove("show"), 3000);
 }
 
+// ✅ Form submit
 form.addEventListener("submit", function (e) {
   e.preventDefault();
   const name = form.name.value.trim();
@@ -163,7 +167,7 @@ function toggleReplyBox(btn) {
 
 // ✅ EmailJS reply notification
 function sendEmail(to, msg, sender) {
-  emailjs.send("service_exqnwp4", "template_abc123", {
+  emailjs.send("service_exqnwp4", "template_ro7gyom", {
     to_email: to,
     message: msg,
     sender_name: sender
@@ -300,7 +304,7 @@ function loadReviews() {
       div.classList.add("review-entry");
 
       const avatar = entry.profilePic
-        ? `<img src="${entry.profilePic}" class="avatar">`
+        ? `<div class="avatar"><img src="${entry.profilePic}" /></div>`
         : `<div class="avatar">${entry.name.charAt(0).toUpperCase()}</div>`;
 
       const imageTag = entry.imageUrl
@@ -355,11 +359,11 @@ function loadReviews() {
 
     averageDisplay.textContent = count ? `${(total / count).toFixed(1)} / 5` : "N/A";
     document.getElementById("reviewCount").textContent = count ? `${count} Reviews` : "";
-
     loader.style.display = "none";
   });
 }
 
+// ✅ Listeners
 document.getElementById("image-modal").addEventListener("click", closeModal);
 filterRating.addEventListener("change", loadReviews);
 loadReviews();

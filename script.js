@@ -83,23 +83,36 @@ form.addEventListener("submit", function (e) {
   };
 
   if (imageFile) {
+    if (!imageFile.type.startsWith("image/")) {
+      alert("Please upload a valid image file.");
+      loader.style.display = "none";
+      return;
+    }
+    if (imageFile.size > 5 * 1024 * 1024) {
+      alert("Image is too large. Please upload under 5MB.");
+      loader.style.display = "none";
+      return;
+    }
+
     const formData = new FormData();
     formData.append("image", imageFile);
+
     fetch(`https://api.imgbb.com/1/upload?key=${imgbbAPIKey}`, {
       method: "POST",
       body: formData
     })
       .then(res => res.json())
       .then(data => {
-        if (data.success) uploadAndSave(data.data.url);
-        else {
+        if (data.success && data.data?.url) {
+          uploadAndSave(data.data.url);
+        } else {
+          alert("Image upload failed. Please try again.");
           loader.style.display = "none";
-          alert("Image upload failed.");
         }
       })
       .catch(() => {
+        alert("Image upload failed. Check your internet connection.");
         loader.style.display = "none";
-        alert("Image upload failed.");
       });
   } else {
     uploadAndSave();
@@ -240,11 +253,13 @@ function renderReplies(repliesObj, feedbackId, parentId = null, originalEmail = 
         ${menu}
         <strong>${rep.name}</strong>: ${rep.message}
         <span class="review-time">· ${timeAgo(rep.date)}</span>
+        ${currentUser ? `
         <div class="reply-box" style="display:none;">
           <textarea placeholder="Write a reply..."></textarea>
           <button onclick="submitReply('${feedbackId}', this.previousElementSibling, '${rid}', '${rep.email}')">Send</button>
         </div>
         <button class="reply-btn nested" onclick="toggleReplyBox(this)"><i class="fas fa-reply"></i></button>
+        ` : ""}
         ${nestedHTML}
       </div>`;
   }

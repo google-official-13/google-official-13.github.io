@@ -48,7 +48,9 @@ h1 {
   color: #f5f5f5;
   text-decoration: none;
 }
-.phone-link:hover { color: #FFC107; }
+.phone-link:hover {
+  color: #FFC107;
+}
 
 label {
   display: block;
@@ -84,7 +86,9 @@ button {
   cursor: pointer;
   transition: background .3s ease;
 }
-button:hover { background: #ffb300; }
+button:hover {
+  background: #ffb300;
+}
 
 .stars {
   display: flex;
@@ -92,7 +96,9 @@ button:hover { background: #ffb300; }
   flex-direction: row-reverse;
   margin-top: 10px;
 }
-.stars input { display: none; }
+.stars input {
+  display: none;
+}
 .stars label {
   font-size: 35px;
   padding: 0 4px;
@@ -116,7 +122,9 @@ button:hover { background: #ffb300; }
   margin-top: 25px;
   text-align: center;
 }
-.filter-container label { margin-right: 8px; }
+.filter-container label {
+  margin-right: 8px;
+}
 #filterRating {
   padding: 10px 14px;
   background: rgba(255,255,255,0.08);
@@ -130,7 +138,9 @@ button:hover { background: #ffb300; }
   transition: background .3s ease;
 }
 #filterRating:hover,
-#filterRating:focus { background: rgba(255,255,255,0.15); }
+#filterRating:focus {
+  background: rgba(255,255,255,0.15);
+}
 
 #review-list {
   margin-top: 30px;
@@ -142,13 +152,17 @@ button:hover { background: #ffb300; }
 /* Review Entry */
 .review-entry {
   margin-bottom: 15px;
-  padding: 15px 5px;
+  padding: 15px 10px;
   background: rgba(255,255,255,0.05);
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.3);
   transition: transform .2s ease;
+  position: relative;
 }
-.review-entry:hover { transform: translateY(-3px); background: rgba(255,255,255,0.08); }
+.review-entry:hover {
+  transform: translateY(-3px);
+  background: rgba(255,255,255,0.08);
+}
 
 .review-header {
   display: flex;
@@ -169,8 +183,16 @@ button:hover { background: #ffb300; }
   font-weight: bold;
   color: #000;
 }
-.avatar img { width: 35px; height: 35px; object-fit: cover; }
+.avatar img {
+  width: 35px;
+  height: 35px;
+  object-fit: cover;
+}
 
+.review-user-info {
+  display: flex;
+  flex-direction: column;
+}
 .review-user-info .name {
   font-weight: bold;
   color: #fff;
@@ -178,11 +200,32 @@ button:hover { background: #ffb300; }
 .review-user-info .email {
   font-size: 11px;
   color: #ccc;
-  word-break: break-all;
+  word-break: break-word;
 }
 
-.review-entry p { margin-top: 8px; }
-.review-time { font-size: 0.8rem; color: #ccc; }
+/* Review content */
+.review-entry p {
+  margin-top: 8px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+/* Footer section (like/reply/mood/timestamp) */
+.review-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.mood-tag {
+  color: #FFC107;
+  font-size: 14px;
+}
+.review-time {
+  font-size: 12px;
+  color: #ccc;
+}
 
 /* Thumbnail */
 .thumbnail {
@@ -197,8 +240,10 @@ button:hover { background: #ffb300; }
 /* Modal */
 #image-modal {
   position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0,0,0,0.85);
   display: none;
   justify-content: center;
@@ -206,20 +251,22 @@ button:hover { background: #ffb300; }
   z-index: 2000;
 }
 #image-modal img {
-  max-width: 90%; max-height: 90vh;
+  max-width: 90%;
+  max-height: 90vh;
   border-radius: 10px;
   box-shadow: 0 0 20px rgba(0,0,0,0.5);
   animation: zoomIn .3s ease;
 }
 #image-modal .close-btn {
   position: absolute;
-  top: 20px; right: 20px;
+  top: 20px;
+  right: 20px;
   font-size: 24px;
   color: #fff;
   cursor: pointer;
 }
 
-/* Review Actions */
+/* Reply Actions */
 .reply-actions {
   display: flex;
   gap: 12px;
@@ -235,9 +282,11 @@ button:hover { background: #ffb300; }
   align-items: center;
   gap: 4px;
 }
-.reply-btn i, .like-btn i { font-size: 16px; }
+.reply-btn i, .like-btn i {
+  font-size: 16px;
+}
 
-/* Replies */
+/* Reply Box & Entries */
 .reply-section {
   margin-top: 12px;
   padding-left: 20px;
@@ -250,10 +299,12 @@ button:hover { background: #ffb300; }
   border-radius: 10px;
   font-size: 14px;
   color: #eee;
+  position: relative;
 }
-.reply-actions button {
-  margin-left: 8px;
-  font-size: 13px;
+.reply-entry .reply-actions-inline {
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 .reply-box {
   display: none;
@@ -281,35 +332,70 @@ button:hover { background: #ffb300; }
   cursor: pointer;
 }
 
+/* 3-Dot Menu */
+.three-dot-menu {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+.menu-dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 24px;
+  background: #222;
+  border: 1px solid #333;
+  border-radius: 5px;
+  min-width: 100px;
+  z-index: 100;
+}
+.menu-dropdown button {
+  width: 100%;
+  background: none;
+  color: #fff;
+  border: none;
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.menu-dropdown button:hover {
+  background: #444;
+}
+
 /* Popup */
 .popup {
   position: fixed;
-  top: 20px; right: 20px;
+  top: 20px;
+  right: 20px;
   background: #FFC107;
   color: #000;
   padding: 12px 20px;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-  opacity: 0; transform: translateY(-20px);
+  opacity: 0;
+  transform: translateY(-20px);
   transition: opacity .4s ease, transform .3s ease;
   z-index: 999;
 }
 .popup.show {
-  opacity: 1; transform: translateY(0);
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* Animations */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0);   }
+  to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes fadeInDown {
   from { opacity: 0; transform: translateY(-20px); }
-  to   { opacity: 1; transform: translateY(0);    }
+  to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes zoomIn {
   from { transform: scale(0.8); opacity: 0; }
-  to   { transform: scale(1);   opacity: 1; }
+  to   { transform: scale(1); opacity: 1; }
 }
 
 /* Developer Footer */
@@ -321,4 +407,7 @@ button:hover { background: #ffb300; }
   font-size: 14px;
   color: #f5f5f5;
 }
-.developer-credit span { color: #FFC107; font-weight: 600; }
+.developer-credit span {
+  color: #FFC107;
+  font-weight: 600;
+}

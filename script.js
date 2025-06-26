@@ -107,10 +107,10 @@ form.addEventListener("submit", function (e) {
 });
 
 function getMoodTag(rating) {
-  if (rating >= 5) return "🌟 Loved it!";
-  if (rating === 4) return "👍 Good";
-  if (rating === 3) return "😐 Okay";
-  return "👎 Needs Work";
+  if (rating >= 5) return '<i class="fas fa-face-grin-stars"></i> Loved it!';
+  if (rating === 4) return '<i class="fas fa-thumbs-up"></i> Good';
+  if (rating === 3) return '<i class="fas fa-meh"></i> Okay';
+  return '<i class="fas fa-thumbs-down"></i> Needs Work';
 }
 
 function enlargeImage(img) {
@@ -231,6 +231,9 @@ function loadReviews() {
            </div>`
         : "";
 
+      const emojiOnly = /^[\p{Emoji}\s]+$/u.test(entry.message) && entry.message.length <= 8;
+      const messageClass = emojiOnly ? "emoji-feedback" : "";
+
       div.innerHTML = `
         <div class="review-header">
           ${avatar}
@@ -239,12 +242,17 @@ function loadReviews() {
             <span class="email">${entry.email}</span>
           </div>
         </div>
-        <p>${entry.message}</p>
-        <p>⭐ ${entry.rating} <span class="mood-tag">${getMoodTag(entry.rating)}</span> <span class="review-time">· ${timeAgo(entry.date)}</span></p>
+        <div class="${messageClass}" style="margin: 10px 0; font-size: ${emojiOnly ? "22px" : "15px"};">
+          ${entry.message}
+        </div>
         ${imageTag}
         <div class="reply-actions">
           ${likeBtn}
           ${replyBtn}
+        </div>
+        <div class="review-footer">
+          <span class="mood-tag">${getMoodTag(entry.rating)}</span>
+          <span class="review-time">${timeAgo(entry.date)}</span>
         </div>
         <div class="reply-section">
           ${repliesHTML}

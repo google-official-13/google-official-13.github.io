@@ -49,7 +49,8 @@
       <label for="imageUpload" class="custom-upload-btn">
         <i class="fas fa-camera"></i> Upload Image
       </label>
-      <input type="file" id="imageUpload" accept="image/*" capture="environment" />
+      <!-- ✅ Default to gallery only -->
+      <input type="file" id="imageUpload" accept="image/*" />
 
       <div id="loader">⏳ Uploading image...</div>
       <button type="submit">Submit Feedback</button>

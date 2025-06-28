@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login</title>
+  <link rel="stylesheet" href="admin-style.css" />
+</head>
+<body>
+  <div class="admin-login-box">
+    <h1>🔐 Admin Access</h1>
+    <button id="googleSignInBtn">Sign in with Google</button>
+
+    <div id="passwordSection" style="display: none;">
+      <input type="email" id="adminEmail" placeholder="Admin Email" />
+      <input type="password" id="adminPassword" placeholder="Admin Password" />
+      <button id="adminLoginBtn">Login as Admin</button>
+    </div>
+
+    <p id="loginMessage"></p>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCUyWy3A6FV4NwobM5abPoZ06kn2cQw-9c",
+      authDomain: "fast-food-feedback.firebaseapp.com",
+      databaseURL: "https://fast-food-feedback-default-rtdb.firebaseio.com",
+      projectId: "fast-food-feedback",
+      storageBucket: "fast-food-feedback.appspot.com",
+      messagingSenderId: "347264169976",
+      appId: "1:347264169976:web:14a7012e792b2582a90145"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -1,6 +1,5 @@
 // admin.js
 
-// ✅ Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyCUyWy3A6FV4NwobM5abPoZ06kn2cQw-9c",
   authDomain: "fast-food-feedback.firebaseapp.com",
@@ -20,7 +19,6 @@ const allowedAdmins = [
   "malvifenil0@gmail.com"
 ];
 
-// ✅ Login logic
 document.getElementById("login-btn").addEventListener("click", () => {
   const email = document.getElementById("admin-email-input").value;
   const password = document.getElementById("admin-password-input").value;
@@ -41,13 +39,11 @@ document.getElementById("login-btn").addEventListener("click", () => {
         return;
       }
 
-      // ✅ Hide login section & show dashboard
       document.getElementById("login-section").style.display = "none";
       document.querySelector(".admin-layout").style.display = "flex";
       document.getElementById("logged-email").innerText = userEmail;
 
-      loadDashboard(); // Call your dashboard logic here
-
+      loadDashboard();
     })
     .catch((error) => {
       console.error(error);
@@ -55,15 +51,11 @@ document.getElementById("login-btn").addEventListener("click", () => {
     });
 });
 
-// ✅ Logout button
 document.getElementById("logout-btn").addEventListener("click", () => {
   auth.signOut().then(() => location.reload());
 });
 
-// ✅ Dummy placeholder: You can add your dashboard load logic
 function loadDashboard() {
   document.getElementById("total-reviews").innerText = "Loading...";
   document.getElementById("average-rating").innerText = "Loading...";
-
-  // You can fetch actual feedback here from Firebase database if needed
 }

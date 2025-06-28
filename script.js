@@ -1,3 +1,5 @@
+// ready-to-paste JavaScript with threaded reviews and show-more for past reviews
+
 const form = document.getElementById("feedback-form");
 const averageDisplay = document.getElementById("average");
 const reviewList = document.getElementById("review-list");
@@ -56,29 +58,43 @@ form.addEventListener("submit", function (e) {
   const message = form.message.value.trim();
   const rating = parseInt(form.rating.value);
   const imageFile = document.getElementById("imageUpload").files[0];
-
   loader.style.display = "block";
 
-  const feedback = {
-    name,
-    email,
+  const review = {
     message,
     rating,
     imageUrl: null,
-    profilePic: currentUser?.photoURL || null,
     date: new Date().toISOString(),
-    deviceId,
-    userId: currentUser?.uid || null,
-    likes: [],
   };
 
   const uploadAndSave = (imageUrl = null) => {
-    feedback.imageUrl = imageUrl;
-    db.push(feedback);
-    form.reset();
-    loader.style.display = "none";
-    showPopup();
-    setTimeout(loadReviews, 500);
+    review.imageUrl = imageUrl;
+    const userKey = currentUser?.uid || deviceId;
+    const feedbackRef = db.child(userKey);
+    feedbackRef.once("value", snap => {
+      const data = snap.val();
+      if (data) {
+        const reviews = data.reviews || [];
+        reviews.push(review);
+        feedbackRef.update({
+          name,
+          email,
+          profilePic: currentUser?.photoURL || null,
+          reviews
+        });
+      } else {
+        feedbackRef.set({
+          name,
+          email,
+          profilePic: currentUser?.photoURL || null,
+          reviews: [review]
+        });
+      }
+      form.reset();
+      loader.style.display = "none";
+      showPopup();
+      setTimeout(loadReviews, 500);
+    });
   };
 
   if (imageFile) {
@@ -88,14 +104,12 @@ form.addEventListener("submit", function (e) {
       return;
     }
     if (imageFile.size > 5 * 1024 * 1024) {
-      alert("Image is too large. Please upload under 5MB.");
+      alert("Image too large, max 5MB allowed.");
       loader.style.display = "none";
       return;
     }
-
     const formData = new FormData();
     formData.append("image", imageFile);
-
     fetch(`https://api.imgbb.com/1/upload?key=${imgbbAPIKey}`, {
       method: "POST",
       body: formData
@@ -105,12 +119,12 @@ form.addEventListener("submit", function (e) {
         if (data.success && data.data?.url) {
           uploadAndSave(data.data.url);
         } else {
-          alert("Image upload failed. Please try again.");
+          alert("Image upload failed.");
           loader.style.display = "none";
         }
       })
       .catch(() => {
-        alert("Image upload failed. Check your internet connection.");
+        alert("Image upload error.");
         loader.style.display = "none";
       });
   } else {
@@ -132,27 +146,21 @@ function enlargeImage(img) {
   modal.style.display = "flex";
 }
 
-function closeModal() {
+document.getElementById("image-modal").addEventListener("click", () => {
   document.getElementById("image-modal").style.display = "none";
-}
+});
 
-function toggleLike(feedbackId) {
+function toggleLike(feedbackId, index) {
   const ref = db.child(feedbackId).child("likes");
   ref.once("value", snap => {
     let likes = snap.val() || [];
     const uid = currentUser?.uid || deviceId;
-    const index = likes.indexOf(uid);
-    if (index > -1) likes.splice(index, 1);
-    else likes.push(uid);
+    const key = `${uid}-${index}`;
+    const i = likes.indexOf(key);
+    if (i > -1) likes.splice(i, 1);
+    else likes.push(key);
     ref.set(likes).then(loadReviews);
   });
-}
-
-function deleteReview(feedbackId, userId) {
-  if (!currentUser || currentUser.uid !== userId) return;
-  if (confirm("Are you sure you want to delete this review?")) {
-    db.child(feedbackId).remove().then(loadReviews);
-  }
 }
 
 function loadReviews() {
@@ -163,111 +171,66 @@ function loadReviews() {
       averageDisplay.textContent = "N/A";
       return;
     }
-
-    const userGrouped = {};
-
-    for (const [id, val] of Object.entries(data)) {
-      const key = val.userId || val.deviceId;
-      if (!userGrouped[key]) userGrouped[key] = [];
-      userGrouped[key].push({ id, ...val });
-    }
-
+    const entries = Object.entries(data);
     let total = 0, count = 0;
     reviewList.innerHTML = "";
 
-    for (const userKey in userGrouped) {
-      const reviews = userGrouped[userKey].sort((a, b) => new Date(b.date) - new Date(a.date));
-      const firstReview = reviews[0];
-      const otherReviews = reviews.slice(1);
-
-      const selectedRating = parseInt(filterRating.value || "0");
-      if (selectedRating && firstReview.rating < selectedRating) continue;
-
-      total += firstReview.rating;
+    entries.forEach(([userKey, val]) => {
+      const reviews = val.reviews || [];
+      if (!reviews.length) return;
+      reviews.sort((a,b) => new Date(b.date) - new Date(a.date));
+      const latest = reviews[0];
+      total += latest.rating;
       count++;
 
       const div = document.createElement("div");
       div.classList.add("review-entry");
+      const avatar = val.profilePic ? `<img src="${val.profilePic}" class="avatar">` : `<div class="avatar">${val.name.charAt(0).toUpperCase()}</div>`;
+      const imageTag = latest.imageUrl ? `<img src="${latest.imageUrl}" class="thumbnail" onclick="enlargeImage(this)">` : "";
 
-      const avatar = firstReview.profilePic
-        ? `<img src="${firstReview.profilePic}" class="avatar">`
-        : `<div class="avatar">${firstReview.name.charAt(0).toUpperCase()}</div>`;
-
-      const imageTag = firstReview.imageUrl
-        ? `<img src="${firstReview.imageUrl}" class="thumbnail" onclick="enlargeImage(this)">`
-        : "";
-
-      const uid = currentUser?.uid || deviceId;
-      const isLiked = firstReview.likes?.includes(uid);
-      const likeIcon = isLiked ? "fas" : "far";
-
-      const likeBtn = `
-        <div class="like-circle" onclick="toggleLike('${firstReview.id}')">
-          <i class="${likeIcon} fa-thumbs-up"></i>
-          <span>${firstReview.likes?.length || 0}</span>
-        </div>`;
-
-      const deleteBtn = (currentUser && currentUser.uid === firstReview.userId)
-        ? `<button class="admin-btn danger" style="margin-top:5px;" onclick="deleteReview('${firstReview.id}', '${firstReview.userId}')">
-              <i class="fas fa-trash"></i> Delete
-           </button>`
-        : "";
-
-      let previousReviewsHtml = "";
-     if (otherReviews.length) {
-  html += `
-    <div class="previous-reviews">
-      <strong>Previous Reviews:</strong>
-      ${otherReviews.map(r => {
-        const avatar = r.profilePic
-          ? `<img src="${r.profilePic}" class="avatar">`
-          : `<div class="avatar">${r.name.charAt(0).toUpperCase()}</div>`;
-        return `
-          <div class="previous-review-item">
-            <div class="review-header">
-              ${avatar}
-              <div class="review-user-info">
-                <span class="name">${r.name}</span>
-                <span class="email">${r.email}</span>
-              </div>
-            </div>
-            <div style="margin:4px 0;">${r.message}</div>
-            <span class="review-time">· ${timeAgo(r.date)}</span>
-          </div>
-        `;
-      }).join("")}
-    </div>`;
-}
-
+      let pastHTML = "";
+      if (reviews.length > 1) {
+        pastHTML = `<button class="show-more">Show Past Reviews</button>
+        <div class="past-reviews" style="display:none;">`;
+        reviews.slice(1).forEach(r => {
+          pastHTML += `<div class="past-review-item">
+            ${r.message} - ${getMoodTag(r.rating)} <span class="review-time">(${timeAgo(r.date)})</span>
+          </div>`;
+        });
+        pastHTML += `</div>`;
+      }
 
       div.innerHTML = `
         <div class="review-header">
           ${avatar}
           <div class="review-user-info">
-            <span class="name">${firstReview.name}</span>
-            <span class="email">${firstReview.email}</span>
+            <span class="name">${val.name}</span>
+            <span class="email">${val.email}</span>
           </div>
         </div>
-        <div style="margin: 10px 0;">${firstReview.message}</div>
+        <div style="margin:10px 0;">${latest.message}</div>
         ${imageTag}
-        ${likeBtn}
         <div class="review-footer">
-          <span class="mood-tag">${getMoodTag(firstReview.rating)}</span>
-          <span class="review-time">${timeAgo(firstReview.date)}</span>
+          <span class="mood-tag">${getMoodTag(latest.rating)}</span>
+          <span class="review-time">${timeAgo(latest.date)}</span>
         </div>
-        ${deleteBtn}
-        ${previousReviewsHtml}
+        ${pastHTML}
       `;
       reviewList.appendChild(div);
-    }
-
-    averageDisplay.textContent = count ? `${(total / count).toFixed(1)} / 5` : "N/A";
+    });
+    averageDisplay.textContent = count ? `${(total/count).toFixed(1)} / 5` : "N/A";
     document.getElementById("reviewCount").textContent = count ? `${count} Reviews` : "";
-
     loader.style.display = "none";
+
+    document.querySelectorAll(".show-more").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const next = btn.nextElementSibling;
+        next.style.display = next.style.display === "block" ? "none" : "block";
+        btn.textContent = next.style.display === "block" ? "Hide Past Reviews" : "Show Past Reviews";
+      });
+    });
   });
 }
 
-document.getElementById("image-modal").addEventListener("click", closeModal);
 filterRating.addEventListener("change", loadReviews);
 loadReviews();

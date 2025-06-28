@@ -1,4 +1,4 @@
- @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Playfair+Display:wght@600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Playfair+Display:wght@600&display=swap');
 
 * {
   box-sizing: border-box;
@@ -227,14 +227,6 @@ button:hover {
   word-break: break-word;
 }
 
-/* Mood / message styling */
-.review-entry .emoji-feedback {
-  font-size: 24px !important;
-  margin: 16px 0;
-  text-align: center;
-  letter-spacing: 1px;
-}
-
 .thumbnail {
   width: 50px;
   height: 50px;
@@ -244,7 +236,6 @@ button:hover {
   cursor: pointer;
 }
 
-/* Like Circle with animation */
 .like-circle {
   position: absolute;
   bottom: -14px;
@@ -266,7 +257,6 @@ button:hover {
   transform: scale(1.2) rotate(-10deg);
 }
 
-/* Review Footer */
 .review-footer {
   display: flex;
   justify-content: space-between;
@@ -281,52 +271,6 @@ button:hover {
 .review-time {
   font-size: 12px;
   color: #555;
-}
-
-/* Reply Section */
-.reply-section {
-  margin-top: 12px;
-  padding-left: 20px;
-  border-left: 2px solid rgba(0,0,0,0.1);
-}
-.reply-entry {
-  margin-top: 10px;
-  background: rgba(255,255,255,0.85);
-  padding: 10px;
-  border-radius: 10px;
-  font-size: 14px;
-  color: #222;
-  position: relative;
-}
-.reply-entry .review-time {
-  display: inline-block;
-  margin-left: 8px;
-  font-size: 11px;
-}
-.reply-box {
-  display: none;
-  margin-top: 10px;
-}
-.reply-box textarea {
-  width: 100%;
-  padding: 8px;
-  background: rgba(255,255,255,0.7);
-  color: #000;
-  border: 1px solid rgba(0,0,0,0.1);
-  border-radius: 6px;
-  resize: none;
-  font-size: 14px;
-}
-.reply-box button {
-  margin-top: 6px;
-  padding: 6px 12px;
-  background: #FFC107;
-  color: #000;
-  border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
 }
 
 /* 3-dot Menu */
@@ -390,7 +334,6 @@ button:hover {
   cursor: pointer;
 }
 
-/* Popup */
 .popup {
   position: fixed;
   top: 20px;
@@ -437,7 +380,6 @@ button:hover {
   from { transform: scale(0.8); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
 }
-
 @keyframes shake {
   0% { transform: translateX(0); }
   20% { transform: translateX(-5px); }

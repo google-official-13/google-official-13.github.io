@@ -3,39 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Login</title>
+  <title>FastFood Admin Dashboard</title>
   <link rel="stylesheet" href="admin-style.css" />
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"></script>
 </head>
 <body>
-  <div class="admin-login-box">
-    <h1>🔐 Admin Access</h1>
-    <button id="googleSignInBtn">Sign in with Google</button>
+  <div class="admin-layout">
+    <aside class="sidebar">
+      <div class="logo">🍔 FastFood</div>
+      <nav class="nav">
+        <a href="#" class="active">Dashboard</a>
+        <a href="#">Feedbacks</a>
+        <a id="export-btn">Export CSV</a>
+        <a id="logout-btn">Logout</a>
+      </nav>
+    </aside>
 
-    <div id="passwordSection" style="display: none;">
-      <input type="email" id="adminEmail" placeholder="Admin Email" />
-      <input type="password" id="adminPassword" placeholder="Admin Password" />
-      <button id="adminLoginBtn">Login as Admin</button>
-    </div>
+    <main class="main-panel">
+      <div class="welcome-banner">
+        <h1>Welcome Admin 👋</h1>
+        <p id="logged-email"></p>
+        <button id="change-password-btn">Change Password</button>
+      </div>
 
-    <p id="loginMessage"></p>
+      <section class="dashboard-stats">
+        <div class="stat-box">
+          <h3>Total Reviews</h3>
+          <p id="total-reviews">0</p>
+        </div>
+        <div class="stat-box">
+          <h3>Average Rating</h3>
+          <p id="average-rating">0.0</p>
+        </div>
+        <button id="delete-all-btn" class="delete-btn">Delete All</button>
+      </section>
+
+      <section class="feedback-list" id="feedback-list">
+        <!-- Feedback cards will appear here -->
+      </section>
+    </main>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCUyWy3A6FV4NwobM5abPoZ06kn2cQw-9c",
-      authDomain: "fast-food-feedback.firebaseapp.com",
-      databaseURL: "https://fast-food-feedback-default-rtdb.firebaseio.com",
-      projectId: "fast-food-feedback",
-      storageBucket: "fast-food-feedback.appspot.com",
-      messagingSenderId: "347264169976",
-      appId: "1:347264169976:web:14a7012e792b2582a90145"
-    };
-    firebase.initializeApp(firebaseConfig);
-  </script>
+  <div id="login-section">
+    <div class="login-box">
+      <h2>Admin Login</h2>
+      <input type="email" id="admin-email-input" placeholder="Admin Email" />
+      <input type="password" id="admin-password-input" placeholder="Password" />
+      <button id="login-btn">Login</button>
+      <p id="login-error"></p>
+    </div>
+  </div>
 
   <script src="admin.js"></script>
 </body>

@@ -1,5 +1,3 @@
-// =============== FULL FINAL VERSION (paste directly) =================
-
 const form = document.getElementById("feedback-form");
 const averageDisplay = document.getElementById("average");
 const reviewList = document.getElementById("review-list");
@@ -135,9 +133,9 @@ function enlargeImage(img) {
   modal.style.display = "flex";
 }
 
-document.getElementById("image-modal").addEventListener("click", () => {
+function closeModal() {
   document.getElementById("image-modal").style.display = "none";
-});
+}
 
 function toggleLike(feedbackId) {
   const ref = db.child(feedbackId).child("likes");
@@ -163,7 +161,6 @@ function toggleReplyBox(btn) {
   }
 }
 
-// EmailJS reply notification
 function sendEmail(to, msg, sender) {
   emailjs.send("service_exqnwp4", "template_abc123", {
     to_email: to,
@@ -207,6 +204,12 @@ function deleteReply(feedbackId, replyId, parentId = null) {
   ref.remove().then(loadReviews);
 }
 
+function deleteReview(feedbackId) {
+  if (confirm("Are you sure you want to delete your review?")) {
+    db.child(feedbackId).remove().then(loadReviews);
+  }
+}
+
 function editReply(feedbackId, replyId, oldMsg, date, parentId = null) {
   const diff = (new Date() - new Date(date)) / 60000;
   if (diff > 5) return alert("You can only edit within 5 minutes");
@@ -217,6 +220,10 @@ function editReply(feedbackId, replyId, oldMsg, date, parentId = null) {
       : db.child(feedbackId).child("replies").child(replyId);
     ref.update({ message: newMsg.trim() }).then(loadReviews);
   }
+}
+
+function escapeQuotes(text) {
+  return text.replace(/'/g, "\\'").replace(/"/g, "&quot;");
 }
 
 function toggleMenu(btn) {
@@ -246,24 +253,12 @@ function renderReplies(repliesObj, feedbackId, parentId = null, originalEmail = 
           <button onclick="deleteReply('${feedbackId}', '${rid}', '${parentId || ""}')">Delete</button>
         </div>
       </div>` : "";
-
-    // avatar for reply
-    const avatar = rep.profilePic
-      ? `<img src="${rep.profilePic}" class="avatar">`
-      : `<div class="avatar">${rep.name.charAt(0).toUpperCase()}</div>`;
-
     const nestedHTML = renderReplies(rep.replies, feedbackId, rid, rep.email);
     html += `
       <div class="reply-entry">
         ${menu}
-        <div class="review-header">
-          ${avatar}
-          <div class="review-user-info">
-            <span class="name">${rep.name}</span>
-            <span class="review-time">· ${timeAgo(rep.date)}</span>
-          </div>
-        </div>
-        <div style="margin-top:6px;">${rep.message}</div>
+        <strong>${rep.name}</strong>: ${rep.message}
+        <span class="review-time">· ${timeAgo(rep.date)}</span>
         ${currentUser ? `
         <div class="reply-box" style="display:none;">
           <textarea placeholder="Write a reply..."></textarea>
@@ -277,7 +272,6 @@ function renderReplies(repliesObj, feedbackId, parentId = null, originalEmail = 
   return html;
 }
 
-
 function loadReviews() {
   db.once("value", snapshot => {
     const data = snapshot.val();
@@ -287,91 +281,88 @@ function loadReviews() {
       return;
     }
 
-    const entriesByUser = {};
+    const entriesMap = {};
     Object.entries(data).forEach(([id, val]) => {
       const key = val.userId || val.deviceId;
-      if (!entriesByUser[key]) entriesByUser[key] = [];
-      entriesByUser[key].push({ id, ...val });
+      if (!entriesMap[key] || new Date(val.date) > new Date(entriesMap[key].date)) {
+        entriesMap[key] = { id, ...val };
+      }
     });
 
+    const entries = Object.values(entriesMap);
     const selectedRating = parseInt(filterRating.value || "0");
 
     let total = 0, count = 0;
     reviewList.innerHTML = "";
 
-    Object.values(entriesByUser).forEach(userReviews => {
-      userReviews.sort((a, b) => new Date(b.date) - new Date(a.date));
-      const latestReview = userReviews[0];
-      if (selectedRating && latestReview.rating < selectedRating) return;
+    entries.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(entry => {
+      if (selectedRating && entry.rating < selectedRating) return;
 
-      total += latestReview.rating;
+      total += entry.rating;
       count++;
 
       const div = document.createElement("div");
       div.classList.add("review-entry");
 
-      const avatar = latestReview.profilePic
-        ? `<img src="${latestReview.profilePic}" class="avatar">`
-        : `<div class="avatar">${latestReview.name.charAt(0).toUpperCase()}</div>`;
+      const avatar = entry.profilePic
+        ? `<img src="${entry.profilePic}" class="avatar">`
+        : `<div class="avatar">${entry.name.charAt(0).toUpperCase()}</div>`;
 
-      const imageTag = latestReview.imageUrl
-        ? `<img src="${latestReview.imageUrl}" class="thumbnail" onclick="enlargeImage(this)">`
+      const imageTag = entry.imageUrl
+        ? `<img src="${entry.imageUrl}" class="thumbnail" onclick="enlargeImage(this)">`
         : "";
 
       const uid = currentUser?.uid || deviceId;
-      const isLiked = latestReview.likes?.includes(uid);
+      const isLiked = entry.likes?.includes(uid);
       const likeIcon = isLiked ? "fas" : "far";
 
       const likeBtn = `
-        <div class="like-circle" onclick="toggleLike('${latestReview.id}')">
+        <div class="like-circle" onclick="toggleLike('${entry.id}')">
           <i class="${likeIcon} fa-thumbs-up"></i>
-          <span>${latestReview.likes?.length || 0}</span>
+          <span>${entry.likes?.length || 0}</span>
         </div>`;
 
       const replyBtn = currentUser
         ? `<button class="reply-btn main" onclick="toggleReplyBox(this)"><i class="fas fa-reply"></i></button>`
         : "";
 
-      const repliesHTML = renderReplies(latestReview.replies, latestReview.id, null, latestReview.email);
+      const canDelete = (currentUser && currentUser.uid === entry.userId) || (!currentUser && entry.deviceId === deviceId);
+      const menu = canDelete ? `
+        <div class="three-dot-menu">
+          <i class="fas fa-ellipsis-v" onclick="toggleMenu(this)"></i>
+          <div class="menu-dropdown">
+            <button onclick="deleteReview('${entry.id}')">Delete</button>
+          </div>
+        </div>` : "";
 
-      // add collapsible for past reviews
-      const pastReviews = userReviews.slice(1).map(pr => `
-        <div class="reply-entry">
-          <strong>${pr.name}</strong>: ${pr.message}
-          <span class="review-time">· ${timeAgo(pr.date)}</span>
-        </div>
-      `).join("");
-
-      const pastReviewsHTML = pastReviews
-        ? `<details style="margin-top:10px;"><summary>Show past reviews</summary>${pastReviews}</details>`
-        : "";
+      const repliesHTML = renderReplies(entry.replies, entry.id, null, entry.email);
 
       const replyBox = currentUser
         ? `<div class="reply-box" style="display:none;">
              <textarea placeholder="Write a reply..."></textarea>
-             <button onclick="submitReply('${latestReview.id}', this.previousElementSibling, null, '${latestReview.email}')">Send</button>
+             <button onclick="submitReply('${entry.id}', this.previousElementSibling, null, '${entry.email}')">Send</button>
            </div>` : "";
 
       div.innerHTML = `
         <div class="review-header">
           ${avatar}
           <div class="review-user-info">
-            <span class="name">${latestReview.name}</span>
-            <span class="email">${latestReview.email}</span>
+            <span class="name">${entry.name}</span>
+            <span class="email">${entry.email}</span>
           </div>
+          ${menu}
         </div>
-        <div style="margin: 10px 0;">${latestReview.message}</div>
+        <div style="margin: 10px 0;">${entry.message}</div>
         ${imageTag}
         ${likeBtn}
         <div class="review-footer">
-          <span class="mood-tag">${getMoodTag(latestReview.rating)}</span>
-          <span class="review-time">${timeAgo(latestReview.date)}</span>
+          <span class="mood-tag">${getMoodTag(entry.rating)}</span>
+          <span class="review-time">${timeAgo(entry.date)}</span>
           ${replyBtn}
         </div>
         <div class="reply-section">
           ${repliesHTML}
           ${replyBox}
-          ${pastReviewsHTML}
         </div>
       `;
       reviewList.appendChild(div);
@@ -379,10 +370,11 @@ function loadReviews() {
 
     averageDisplay.textContent = count ? `${(total / count).toFixed(1)} / 5` : "N/A";
     document.getElementById("reviewCount").textContent = count ? `${count} Reviews` : "";
+
     loader.style.display = "none";
   });
 }
 
+document.getElementById("image-modal").addEventListener("click", closeModal);
 filterRating.addEventListener("change", loadReviews);
 loadReviews();
-// ================= END =====================

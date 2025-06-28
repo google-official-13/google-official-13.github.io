@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RamDev Dalwada Admin Panel</title>
+  <link rel="stylesheet" href="style.css" /> <!-- Same style.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    .loader {
+      margin: 10px 0;
+      font-style: italic;
+      color: #666;
+    }
+    .stats-container {
+      display: flex;
+      gap: 15px;
+      margin: 20px 0;
+    }
+    .stat-box {
+      flex: 1;
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stat-box span:first-child {
+      font-size: 24px;
+      font-weight: bold;
+      display: block;
+    }
+    .admin-utilities {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .admin-btn {
+      padding: 8px 12px;
+      background: #4361ee;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .admin-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    .admin-btn.danger {
+      background-color: #dc3545;
+    }
+    /* welcome overlay */
+    #admin-welcome {
+      position: fixed;
+      top:0;
+      left:0;
+      right:0;
+      bottom:0;
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 28px;
+      font-weight: bold;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 1s ease;
+      pointer-events: none;
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>RamDev Dalwada Admin Panel</h1>
+    <div id="admin-login-section">
+      <div id="admin-loader" class="loader" style="display:none;">Loading...</div>
+      <button id="adminLoginBtn">🔐 Sign in as Admin</button>
+      <p id="admin-user-info" style="display:none;"></p>
+      <button id="adminLogoutBtn" style="display:none;">Logout</button>
+    </div>
+
+    <div id="admin-content" style="display:none;">
+      <div class="stats-container">
+        <div class="stat-box">
+          <span id="total-reviews">0</span>
+          <span>Total Reviews</span>
+        </div>
+        <div class="stat-box">
+          <span id="avg-rating">0</span>
+          <span>Avg Rating</span>
+        </div>
+        <div class="stat-box">
+          <span id="today-reviews">0</span>
+          <span>Today</span>
+        </div>
+      </div>
+      <h2>Manage Feedbacks</h2>
+      <div class="filter-container">
+        <label><i class="fas fa-filter"></i> Filter by Rating:</label>
+        <select id="adminFilterRating">
+          <option value="">All</option>
+          <option value="5">Only 5 Stars</option>
+          <option value="4">4 Stars & up</option>
+          <option value="3">3 Stars & up</option>
+          <option value="2">2 Stars & up</option>
+          <option value="1">1 Star & up</option>
+        </select>
+      </div>
+      <div class="admin-utilities">
+        <button id="refreshBtn" class="admin-btn">
+          <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+        <button id="exportBtn" class="admin-btn">
+          <i class="fas fa-file-export"></i> Export CSV
+        </button>
+        <button id="deleteAllBtn" class="admin-btn danger">
+          <i class="fas fa-trash"></i> Delete All
+        </button>
+      </div>
+      <div id="admin-review-list">
+        <!-- Admin reviews load here -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="developer-credit">
+    <p>© 2025 Ramdev Dalwada | Developed by <span>Fenil</span></p>
+  </footer>
+
+  <!-- welcome overlay -->
+  <div id="admin-welcome">Welcome to Admin Panel</div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAumqMP8xJyz29JIUme0xKqeHqFa89Zgpw",
+      authDomain: "fast-food-feedback-ad9d2.firebaseapp.com",
+      databaseURL: "https://fast-food-feedback-ad9d2-default-rtdb.firebaseio.com",
+      projectId: "fast-food-feedback-ad9d2",
+      storageBucket: "fast-food-feedback-ad9d2.appspot.com",
+      messagingSenderId: "443979330302",
+      appId: "1:443979330302:web:ac16d2bb95d44884a6abaf",
+      measurementId: "G-NV965T81WZ"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const ADMIN_EMAILS = [
+      'ritikbhalwala1@gmail.com',
+      'malvifenil0@gmail.com'
+    ];
+
+    function showAdminWelcome(name) {
+      const welcome = document.getElementById("admin-welcome");
+      welcome.textContent = `Welcome to Admin Panel, ${name}!`;
+      welcome.style.opacity = "1";
+      setTimeout(() => {
+        welcome.style.opacity = "0";
+      }, 3000);
+    }
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (user && ADMIN_EMAILS.includes(user.email)) {
+        document.getElementById("admin-content").style.display = "block";
+        document.getElementById("adminLoginBtn").style.display = "none";
+        document.getElementById("adminLogoutBtn").style.display = "inline-block";
+        document.getElementById("admin-user-info").textContent = `Signed in as ${user.displayName}`;
+        document.getElementById("admin-user-info").style.display = "block";
+        showAdminWelcome(user.displayName || "Admin");
+      }
+    });
+
+    document.getElementById("adminLoginBtn").addEventListener("click", () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithPopup(provider).catch(console.error);
+    });
+
+    document.getElementById("adminLogoutBtn").addEventListener("click", () => {
+      firebase.auth().signOut().then(() => location.reload());
+    });
+  </script>
+  <script src="admin-script.js"></script>
+</body>
+</html>

@@ -70,7 +70,6 @@ form.addEventListener("submit", function (e) {
     deviceId,
     userId: currentUser?.uid || null,
     likes: [],
-    replies: {}
   };
 
   const uploadAndSave = (imageUrl = null) => {
@@ -149,127 +148,11 @@ function toggleLike(feedbackId) {
   });
 }
 
-function toggleReplyBox(btn) {
-  const box = btn.closest(".review-entry").querySelector(".reply-box");
-  if (box) {
-    box.style.display = box.style.display === "block" ? "none" : "block";
-    const textarea = box.querySelector("textarea");
-    setTimeout(() => {
-      textarea.focus();
-      textarea.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 100);
-  }
-}
-
-function sendEmail(to, msg, sender) {
-  emailjs.send("service_exqnwp4", "template_abc123", {
-    to_email: to,
-    message: msg,
-    sender_name: sender
-  }, "b2bU5JAhe0VtZv5al").then(() => {
-    console.log("Email sent!");
-  }).catch(console.error);
-}
-
-function submitReply(feedbackId, textarea, parentReplyId = null, originalEmail = "") {
-  const replyText = textarea.value.trim();
-  if (!replyText) return;
-  const reply = {
-    message: replyText,
-    name: currentUser.displayName,
-    email: currentUser.email,
-    userId: currentUser.uid,
-    profilePic: currentUser.photoURL || null,
-    date: new Date().toISOString(),
-    likes: [],
-    replies: {}
-  };
-
-  const ref = parentReplyId
-    ? db.child(feedbackId).child("replies").child(parentReplyId).child("replies")
-    : db.child(feedbackId).child("replies");
-
-  ref.push(reply).then(() => {
-    if (originalEmail && currentUser.email !== originalEmail) {
-      sendEmail(originalEmail, replyText, currentUser.displayName);
-    }
-    loadReviews();
-  });
-}
-
-function deleteReply(feedbackId, replyId, parentId = null) {
-  const ref = parentId
-    ? db.child(feedbackId).child("replies").child(parentId).child("replies").child(replyId)
-    : db.child(feedbackId).child("replies").child(replyId);
-  ref.remove().then(loadReviews);
-}
-
-function deleteReview(feedbackId) {
-  if (confirm("Are you sure you want to delete your review?")) {
+function deleteReview(feedbackId, userId) {
+  if (!currentUser || currentUser.uid !== userId) return;
+  if (confirm("Are you sure you want to delete this review?")) {
     db.child(feedbackId).remove().then(loadReviews);
   }
-}
-
-function editReply(feedbackId, replyId, oldMsg, date, parentId = null) {
-  const diff = (new Date() - new Date(date)) / 60000;
-  if (diff > 5) return alert("You can only edit within 5 minutes");
-  const newMsg = prompt("Edit your reply:", oldMsg);
-  if (newMsg && newMsg.trim()) {
-    const ref = parentId
-      ? db.child(feedbackId).child("replies").child(parentId).child("replies").child(replyId)
-      : db.child(feedbackId).child("replies").child(replyId);
-    ref.update({ message: newMsg.trim() }).then(loadReviews);
-  }
-}
-
-function escapeQuotes(text) {
-  return text.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-}
-
-function toggleMenu(btn) {
-  const menu = btn.nextElementSibling;
-  document.querySelectorAll(".menu-dropdown").forEach(m => {
-    if (m !== menu) m.style.display = "none";
-  });
-  menu.style.display = menu.style.display === "block" ? "none" : "block";
-  document.addEventListener("click", function handler(e) {
-    if (!menu.contains(e.target) && !btn.contains(e.target)) {
-      menu.style.display = "none";
-      document.removeEventListener("click", handler);
-    }
-  });
-}
-
-function renderReplies(repliesObj, feedbackId, parentId = null, originalEmail = "") {
-  let html = "";
-  for (const [rid, rep] of Object.entries(repliesObj || {})) {
-    const canEdit = currentUser && currentUser.uid === rep.userId;
-    const diff = (new Date() - new Date(rep.date)) / 60000;
-    const menu = canEdit ? `
-      <div class="three-dot-menu">
-        <i class="fas fa-ellipsis-v" onclick="toggleMenu(this)"></i>
-        <div class="menu-dropdown">
-          ${diff < 5 ? `<button onclick="editReply('${feedbackId}', '${rid}', '${escapeQuotes(rep.message)}', '${rep.date}', '${parentId || ""}')">Edit</button>` : ""}
-          <button onclick="deleteReply('${feedbackId}', '${rid}', '${parentId || ""}')">Delete</button>
-        </div>
-      </div>` : "";
-    const nestedHTML = renderReplies(rep.replies, feedbackId, rid, rep.email);
-    html += `
-      <div class="reply-entry">
-        ${menu}
-        <strong>${rep.name}</strong>: ${rep.message}
-        <span class="review-time">· ${timeAgo(rep.date)}</span>
-        ${currentUser ? `
-        <div class="reply-box" style="display:none;">
-          <textarea placeholder="Write a reply..."></textarea>
-          <button onclick="submitReply('${feedbackId}', this.previousElementSibling, '${rid}', '${rep.email}')">Send</button>
-        </div>
-        <button class="reply-btn nested" onclick="toggleReplyBox(this)"><i class="fas fa-reply"></i></button>
-        ` : ""}
-        ${nestedHTML}
-      </div>`;
-  }
-  return html;
 }
 
 function loadReviews() {
@@ -281,92 +164,102 @@ function loadReviews() {
       return;
     }
 
-    const entriesMap = {};
-    Object.entries(data).forEach(([id, val]) => {
-      const key = val.userId || val.deviceId;
-      if (!entriesMap[key] || new Date(val.date) > new Date(entriesMap[key].date)) {
-        entriesMap[key] = { id, ...val };
-      }
-    });
+    const userGrouped = {};
 
-    const entries = Object.values(entriesMap);
-    const selectedRating = parseInt(filterRating.value || "0");
+    for (const [id, val] of Object.entries(data)) {
+      const key = val.userId || val.deviceId;
+      if (!userGrouped[key]) userGrouped[key] = [];
+      userGrouped[key].push({ id, ...val });
+    }
 
     let total = 0, count = 0;
     reviewList.innerHTML = "";
 
-    entries.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(entry => {
-      if (selectedRating && entry.rating < selectedRating) return;
+    for (const userKey in userGrouped) {
+      const reviews = userGrouped[userKey].sort((a, b) => new Date(b.date) - new Date(a.date));
+      const firstReview = reviews[0];
+      const otherReviews = reviews.slice(1);
 
-      total += entry.rating;
+      const selectedRating = parseInt(filterRating.value || "0");
+      if (selectedRating && firstReview.rating < selectedRating) continue;
+
+      total += firstReview.rating;
       count++;
 
       const div = document.createElement("div");
       div.classList.add("review-entry");
 
-      const avatar = entry.profilePic
-        ? `<img src="${entry.profilePic}" class="avatar">`
-        : `<div class="avatar">${entry.name.charAt(0).toUpperCase()}</div>`;
+      const avatar = firstReview.profilePic
+        ? `<img src="${firstReview.profilePic}" class="avatar">`
+        : `<div class="avatar">${firstReview.name.charAt(0).toUpperCase()}</div>`;
 
-      const imageTag = entry.imageUrl
-        ? `<img src="${entry.imageUrl}" class="thumbnail" onclick="enlargeImage(this)">`
+      const imageTag = firstReview.imageUrl
+        ? `<img src="${firstReview.imageUrl}" class="thumbnail" onclick="enlargeImage(this)">`
         : "";
 
       const uid = currentUser?.uid || deviceId;
-      const isLiked = entry.likes?.includes(uid);
+      const isLiked = firstReview.likes?.includes(uid);
       const likeIcon = isLiked ? "fas" : "far";
 
       const likeBtn = `
-        <div class="like-circle" onclick="toggleLike('${entry.id}')">
+        <div class="like-circle" onclick="toggleLike('${firstReview.id}')">
           <i class="${likeIcon} fa-thumbs-up"></i>
-          <span>${entry.likes?.length || 0}</span>
+          <span>${firstReview.likes?.length || 0}</span>
         </div>`;
 
-      const replyBtn = currentUser
-        ? `<button class="reply-btn main" onclick="toggleReplyBox(this)"><i class="fas fa-reply"></i></button>`
+      const deleteBtn = (currentUser && currentUser.uid === firstReview.userId)
+        ? `<button class="admin-btn danger" style="margin-top:5px;" onclick="deleteReview('${firstReview.id}', '${firstReview.userId}')">
+              <i class="fas fa-trash"></i> Delete
+           </button>`
         : "";
 
-      const canDelete = (currentUser && currentUser.uid === entry.userId) || (!currentUser && entry.deviceId === deviceId);
-      const menu = canDelete ? `
-        <div class="three-dot-menu">
-          <i class="fas fa-ellipsis-v" onclick="toggleMenu(this)"></i>
-          <div class="menu-dropdown">
-            <button onclick="deleteReview('${entry.id}')">Delete</button>
+      let previousReviewsHtml = "";
+     if (otherReviews.length) {
+  html += `
+    <div class="previous-reviews">
+      <strong>Previous Reviews:</strong>
+      ${otherReviews.map(r => {
+        const avatar = r.profilePic
+          ? `<img src="${r.profilePic}" class="avatar">`
+          : `<div class="avatar">${r.name.charAt(0).toUpperCase()}</div>`;
+        return `
+          <div class="previous-review-item">
+            <div class="review-header">
+              ${avatar}
+              <div class="review-user-info">
+                <span class="name">${r.name}</span>
+                <span class="email">${r.email}</span>
+              </div>
+            </div>
+            <div style="margin:4px 0;">${r.message}</div>
+            <span class="review-time">· ${timeAgo(r.date)}</span>
           </div>
-        </div>` : "";
+        `;
+      }).join("")}
+    </div>`;
+}
 
-      const repliesHTML = renderReplies(entry.replies, entry.id, null, entry.email);
-
-      const replyBox = currentUser
-        ? `<div class="reply-box" style="display:none;">
-             <textarea placeholder="Write a reply..."></textarea>
-             <button onclick="submitReply('${entry.id}', this.previousElementSibling, null, '${entry.email}')">Send</button>
-           </div>` : "";
 
       div.innerHTML = `
         <div class="review-header">
           ${avatar}
           <div class="review-user-info">
-            <span class="name">${entry.name}</span>
-            <span class="email">${entry.email}</span>
+            <span class="name">${firstReview.name}</span>
+            <span class="email">${firstReview.email}</span>
           </div>
-          ${menu}
         </div>
-        <div style="margin: 10px 0;">${entry.message}</div>
+        <div style="margin: 10px 0;">${firstReview.message}</div>
         ${imageTag}
         ${likeBtn}
         <div class="review-footer">
-          <span class="mood-tag">${getMoodTag(entry.rating)}</span>
-          <span class="review-time">${timeAgo(entry.date)}</span>
-          ${replyBtn}
+          <span class="mood-tag">${getMoodTag(firstReview.rating)}</span>
+          <span class="review-time">${timeAgo(firstReview.date)}</span>
         </div>
-        <div class="reply-section">
-          ${repliesHTML}
-          ${replyBox}
-        </div>
+        ${deleteBtn}
+        ${previousReviewsHtml}
       `;
       reviewList.appendChild(div);
-    });
+    }
 
     averageDisplay.textContent = count ? `${(total / count).toFixed(1)} / 5` : "N/A";
     document.getElementById("reviewCount").textContent = count ? `${count} Reviews` : "";

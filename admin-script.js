@@ -1,17 +1,16 @@
-// Handle mobile redirect login
-firebase.auth().getRedirectResult().then(result => {
-  if (result.user) {
-    console.log("Redirect login success");
-  }
-}).catch(error => {
-  console.error("Redirect login error", error);
-});
+ window.onload = function () {
+  const firebaseConfig = {
+    apiKey: "AIzaSyAumqMP8xJyz29JIUme0xKqeHqFa89Zgpw",
+    authDomain: "fast-food-feedback-ad9d2.firebaseapp.com",
+    databaseURL: "https://fast-food-feedback-ad9d2-default-rtdb.firebaseio.com",
+    projectId: "fast-food-feedback-ad9d2",
+    storageBucket: "fast-food-feedback-ad9d2.appspot.com",
+    messagingSenderId: "443979330302",
+    appId: "1:443979330302:web:ac16d2bb95d44884a6abaf"
+  };
+  firebase.initializeApp(firebaseConfig);
 
-window.onload = function () {
-  const ADMIN_EMAILS = [
-    "ritikbhalwala1@gmail.com",
-    "malvifenil0@gmail.com"
-  ];
+  const ADMIN_EMAILS = ["ritikbhalwala1@gmail.com", "malvifenil0@gmail.com"];
 
   const adminLoginBtn = document.getElementById("adminLoginBtn");
   const adminLogoutBtn = document.getElementById("adminLogoutBtn");
@@ -24,28 +23,32 @@ window.onload = function () {
   const exportBtn = document.getElementById("exportBtn");
   const deleteAllBtn = document.getElementById("deleteAllBtn");
 
-  let currentAdmin = null;
+  function showAdminWelcome(name) {
+    const welcome = document.getElementById("admin-welcome");
+    welcome.textContent = `Welcome to Admin Panel, ${name}!`;
+    welcome.style.opacity = "1";
+    setTimeout(() => { welcome.style.opacity = "0"; }, 3000);
+  }
 
   firebase.auth().onAuthStateChanged(user => {
     if (user && ADMIN_EMAILS.includes(user.email)) {
-      currentAdmin = user;
       adminUserInfo.textContent = `Signed in as ${user.displayName} (${user.email})`;
       adminUserInfo.style.display = "block";
       adminLogoutBtn.style.display = "inline-block";
       adminLoginBtn.style.display = "none";
       adminContent.style.display = "block";
-      document.getElementById("admin-welcome").style.opacity = "1";
-      setTimeout(() => document.getElementById("admin-welcome").style.opacity = "0", 3000);
+      showAdminWelcome(user.displayName || "Admin");
       loadAdminReviews();
     } else {
-      currentAdmin = null;
       adminContent.style.display = "none";
     }
   });
 
   adminLoginBtn.addEventListener("click", () => {
     const provider = new firebase.auth.GoogleAuthProvider();
-    if (window.innerWidth < 768) {
+    const isMobile = window.innerWidth < 768;
+    const isInsecure = location.protocol !== "https:" && location.hostname !== "localhost";
+    if (isMobile || isInsecure) {
       firebase.auth().signInWithRedirect(provider);
     } else {
       firebase.auth().signInWithPopup(provider).catch(console.error);
@@ -72,19 +75,17 @@ window.onload = function () {
     firebase.database().ref("feedbacks").once("value").then(snapshot => {
       const data = snapshot.val();
       if (!data) return alert("No reviews to export.");
-
       const rows = [["Name", "Email", "Message", "Rating", "Date"]];
       Object.values(data).forEach(item => {
         rows.push([
           item.name || "",
           item.email || "",
-          (item.message || "").replace(/(\r\n|\n|\r)/gm, " "),
+          item.message?.replace(/\n/g, " ") || "",
           item.rating || "",
           item.date || ""
         ]);
       });
-
-      const csv = rows.map(row => row.map(v => `"${v}"`).join(",")).join("\n");
+      const csv = rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
       const blob = new Blob([csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -101,13 +102,12 @@ window.onload = function () {
       const data = snapshot.val();
       let count = 0, total = 0, todayCount = 0;
       const today = new Date().toISOString().slice(0, 10);
-      const selected = parseInt(filterSelect?.value || 0);
+      const selected = parseInt(filterSelect.value || 0);
 
       if (data) {
         Object.entries(data).forEach(([id, item]) => {
           const rating = parseInt(item.rating);
           if (!rating || (selected && rating < selected)) return;
-
           total += rating;
           count++;
           if ((item.date || "").slice(0, 10) === today) todayCount++;
@@ -122,8 +122,7 @@ window.onload = function () {
             Message: ${item.message || "No message"}<br/>
             <button class="admin-btn danger" onclick="deleteReview('${id}')">
               <i class="fas fa-trash"></i> Delete
-            </button>
-          `;
+            </button>`;
           reviewList.appendChild(div);
         });
       }

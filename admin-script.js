@@ -1,3 +1,12 @@
+// Handle mobile redirect login
+firebase.auth().getRedirectResult().then(result => {
+  if (result.user) {
+    console.log("Redirect login success");
+  }
+}).catch(error => {
+  console.error("Redirect login error", error);
+});
+
 window.onload = function () {
   const ADMIN_EMAILS = [
     "ritikbhalwala1@gmail.com",
@@ -15,23 +24,21 @@ window.onload = function () {
   const exportBtn = document.getElementById("exportBtn");
   const deleteAllBtn = document.getElementById("deleteAllBtn");
 
-  function showAdminWelcome(name) {
-    const welcome = document.getElementById("admin-welcome");
-    welcome.textContent = `Welcome to Admin Panel, ${name || "Admin"}!`;
-    welcome.style.opacity = "1";
-    setTimeout(() => (welcome.style.opacity = "0"), 3000);
-  }
+  let currentAdmin = null;
 
   firebase.auth().onAuthStateChanged(user => {
     if (user && ADMIN_EMAILS.includes(user.email)) {
+      currentAdmin = user;
       adminUserInfo.textContent = `Signed in as ${user.displayName} (${user.email})`;
       adminUserInfo.style.display = "block";
       adminLogoutBtn.style.display = "inline-block";
       adminLoginBtn.style.display = "none";
       adminContent.style.display = "block";
-      showAdminWelcome(user.displayName);
+      document.getElementById("admin-welcome").style.opacity = "1";
+      setTimeout(() => document.getElementById("admin-welcome").style.opacity = "0", 3000);
       loadAdminReviews();
     } else {
+      currentAdmin = null;
       adminContent.style.display = "none";
     }
   });
@@ -65,6 +72,7 @@ window.onload = function () {
     firebase.database().ref("feedbacks").once("value").then(snapshot => {
       const data = snapshot.val();
       if (!data) return alert("No reviews to export.");
+
       const rows = [["Name", "Email", "Message", "Rating", "Date"]];
       Object.values(data).forEach(item => {
         rows.push([
@@ -75,7 +83,8 @@ window.onload = function () {
           item.date || ""
         ]);
       });
-      const csv = rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+
+      const csv = rows.map(row => row.map(v => `"${v}"`).join(",")).join("\n");
       const blob = new Blob([csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");

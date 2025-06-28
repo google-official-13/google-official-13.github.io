@@ -16,6 +16,7 @@
       display: flex;
       gap: 15px;
       margin: 20px 0;
+      flex-wrap: wrap;
     }
     .stat-box {
       flex: 1;
@@ -23,6 +24,7 @@
       padding: 15px;
       border-radius: 8px;
       text-align: center;
+      min-width: 100px;
     }
     .stat-box span:first-child {
       font-size: 24px;
@@ -31,6 +33,7 @@
     }
     .admin-utilities {
       display: flex;
+      flex-wrap: wrap;
       gap: 10px;
       margin-bottom: 15px;
     }
@@ -69,6 +72,7 @@
       pointer-events: none;
     }
   </style>
+
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -121,7 +125,9 @@
           <i class="fas fa-trash"></i> Delete All
         </button>
       </div>
-      <div id="admin-review-list"></div>
+      <div id="admin-review-list">
+        <!-- Admin reviews load here -->
+      </div>
     </div>
   </div>
 
@@ -130,6 +136,19 @@
   </footer>
 
   <div id="admin-welcome">Welcome to Admin Panel</div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAumqMP8xJyz29JIUme0xKqeHqFa89Zgpw",
+      authDomain: "fast-food-feedback-ad9d2.firebaseapp.com",
+      databaseURL: "https://fast-food-feedback-ad9d2-default-rtdb.firebaseio.com",
+      projectId: "fast-food-feedback-ad9d2",
+      storageBucket: "fast-food-feedback-ad9d2.appspot.com",
+      messagingSenderId: "443979330302",
+      appId: "1:443979330302:web:ac16d2bb95d44884a6abaf"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
   <script src="admin-script.js"></script>
 </body>
 </html>

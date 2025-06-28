@@ -34,16 +34,19 @@ window.onload = function () {
 
   adminLoginBtn.addEventListener("click", () => {
     const provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithPopup(provider).catch(console.error);
+    // Use redirect for mobile safety
+    if (window.innerWidth < 768) {
+      firebase.auth().signInWithRedirect(provider);
+    } else {
+      firebase.auth().signInWithPopup(provider).catch(console.error);
+    }
   });
 
   adminLogoutBtn.addEventListener("click", () => {
-    firebase.auth().signOut();
-    location.reload();
+    firebase.auth().signOut().then(() => location.reload());
   });
 
   refreshBtn.addEventListener("click", loadAdminReviews);
-
   filterSelect.addEventListener("change", loadAdminReviews);
 
   deleteAllBtn.addEventListener("click", () => {
@@ -65,14 +68,14 @@ window.onload = function () {
       const rows = [["Name", "Email", "Message", "Rating", "Date"]];
       Object.values(data).forEach(item => {
         rows.push([
-          item.name,
-          item.email,
-          item.message,
-          item.rating,
-          item.date
+          item.name || "",
+          item.email || "",
+          item.message?.replace(/(\r\n|\n|\r)/gm, " ") || "",
+          item.rating || "",
+          item.date || ""
         ]);
       });
-      let csv = rows.map(r => r.join(",")).join("\n");
+      const csv = rows.map(row => row.map(v => `"${v}"`).join(",")).join("\n");
       const blob = new Blob([csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -91,27 +94,24 @@ window.onload = function () {
 
       if (data) {
         const today = new Date().toISOString().slice(0, 10);
+        const selected = parseInt(filterSelect?.value || 0);
         Object.entries(data).forEach(([id, item]) => {
           const rating = parseInt(item.rating);
+          if (!rating || (selected && rating < selected)) return;
+
           total += rating;
           count++;
-          if (item.date.slice(0, 10) === today) {
-            todayCount++;
-          }
-          const selected = parseInt(filterSelect.value) || 0;
-          if (selected && rating < selected) return;
+
+          if ((item.date || "").slice(0, 10) === today) todayCount++;
 
           const div = document.createElement("div");
-          div.classList.add("review-entry");
-          div.style.marginBottom = "10px";
-          div.style.padding = "10px";
-          div.style.border = "1px solid #ccc";
-          div.style.borderRadius = "5px";
+          div.className = "review-entry";
+          div.style.cssText = "margin-bottom:10px;padding:10px;border:1px solid #ccc;border-radius:5px;";
           div.innerHTML = `
-            <strong>${item.name}</strong> (${item.email})<br/>
-            <small>${item.date}</small><br/>
+            <strong>${item.name || "Anonymous"}</strong> (${item.email || "No Email"})<br/>
+            <small>${item.date || "No Date"}</small><br/>
             Rating: ${rating} ⭐<br/>
-            Message: ${item.message}<br/>
+            Message: ${item.message || "No message"}<br/>
             <button class="admin-btn danger" onclick="deleteReview('${id}')">
               <i class="fas fa-trash"></i> Delete
             </button>
@@ -129,9 +129,7 @@ window.onload = function () {
 
   window.deleteReview = function (id) {
     if (confirm("Delete this review?")) {
-      firebase.database().ref("feedbacks").child(id).remove().then(() => {
-        loadAdminReviews();
-      });
+      firebase.database().ref("feedbacks").child(id).remove().then(loadAdminReviews);
     }
   };
 };

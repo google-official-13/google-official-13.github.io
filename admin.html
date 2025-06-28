@@ -1,229 +1,43 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RamDev Dalwada Admin Panel</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <style>
-    .loader { margin: 10px 0; font-style: italic; color: #666; }
-    .stats-container { display: flex; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
-    .stat-box {
-      flex: 1; background: #f5f5f5; padding: 15px;
-      border-radius: 8px; text-align: center;
-    }
-    .stat-box span:first-child {
-      font-size: 24px; font-weight: bold; display: block;
-    }
-    .admin-utilities { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-    .admin-btn {
-      padding: 8px 12px; background: #4361ee; color: white;
-      border: none; border-radius: 5px; cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .admin-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-    .admin-btn.danger { background-color: #dc3545; }
-    #admin-welcome {
-      position: fixed; top:0; left:0; right:0; bottom:0;
-      background: rgba(0,0,0,0.85); color: #fff;
-      display: flex; justify-content: center; align-items: center;
-      font-size: 28px; font-weight: bold; z-index: 9999;
-      opacity: 0; transition: opacity 1s ease;
-      pointer-events: none;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>Admin Panel - Feedback Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="admin-style.css" />
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>RamDev Dalwada Admin Panel</h1>
-    <div id="admin-login-section">
-      <div id="admin-loader" class="loader" style="display:none;">Loading...</div>
-      <button id="adminLoginBtn">🔐 Sign in as Admin</button>
-      <p id="admin-user-info" style="display:none;"></p>
-      <button id="adminLogoutBtn" style="display:none;">Logout</button>
+  <div class="admin-container">
+    <h1 class="welcome-text">👋 Welcome to Admin Panel</h1>
+
+    <div id="login-section">
+      <button id="login-btn">🔐 Sign in with Google</button>
     </div>
 
-    <div id="admin-content" style="display:none;">
-      <div class="stats-container">
-        <div class="stat-box"><span id="total-reviews">0</span><span>Total Reviews</span></div>
-        <div class="stat-box"><span id="avg-rating">0</span><span>Avg Rating</span></div>
-        <div class="stat-box"><span id="today-reviews">0</span><span>Today</span></div>
+    <div id="admin-section" class="hidden">
+      <div class="admin-header">
+        <p id="admin-email"></p>
+        <button id="logout-btn">🚪 Logout</button>
       </div>
 
-      <h2>Manage Feedbacks</h2>
-      <div class="filter-container">
-        <label><i class="fas fa-filter"></i> Filter by Rating:</label>
-        <select id="adminFilterRating">
-          <option value="">All</option>
-          <option value="5">Only 5 Stars</option>
-          <option value="4">4 Stars & up</option>
-          <option value="3">3 Stars & up</option>
-          <option value="2">2 Stars & up</option>
-          <option value="1">1 Star & up</option>
-        </select>
+      <div class="admin-actions">
+        <button id="export-btn">📤 Export to CSV</button>
+        <button id="delete-all-btn">🗑️ Delete All Feedback</button>
       </div>
 
-      <div class="admin-utilities">
-        <button id="refreshBtn" class="admin-btn"><i class="fas fa-sync-alt"></i> Refresh</button>
-        <button id="exportBtn" class="admin-btn"><i class="fas fa-file-export"></i> Export CSV</button>
-        <button id="deleteAllBtn" class="admin-btn danger"><i class="fas fa-trash"></i> Delete All</button>
+      <div id="stats">
+        <p>Total Reviews: <span id="total-reviews">0</span></p>
+        <p>Average Rating: <span id="average-rating">0</span></p>
       </div>
 
-      <div id="admin-review-list"></div>
+      <h2>📋 All Feedbacks</h2>
+      <div id="feedback-list"></div>
     </div>
   </div>
 
-  <footer class="developer-credit">
-    <p>© 2025 Ramdev Dalwada | Developed by <span>Fenil</span></p>
-  </footer>
-
-  <div id="admin-welcome">Welcome to Admin Panel</div>
-
-  <script>
-    window.onload = function () {
-      const firebaseConfig = {
-        apiKey: "AIzaSyAumqMP8xJyz29JIUme0xKqeHqFa89Zgpw",
-        authDomain: "fast-food-feedback-ad9d2.firebaseapp.com",
-        databaseURL: "https://fast-food-feedback-ad9d2-default-rtdb.firebaseio.com",
-        projectId: "fast-food-feedback-ad9d2",
-        storageBucket: "fast-food-feedback-ad9d2.appspot.com",
-        messagingSenderId: "443979330302",
-        appId: "1:443979330302:web:ac16d2bb95d44884a6abaf"
-      };
-      firebase.initializeApp(firebaseConfig);
-
-      const ADMIN_EMAILS = ["ritikbhalwala1@gmail.com", "malvifenil0@gmail.com"];
-
-      const adminLoginBtn = document.getElementById("adminLoginBtn");
-      const adminLogoutBtn = document.getElementById("adminLogoutBtn");
-      const adminUserInfo = document.getElementById("admin-user-info");
-      const adminContent = document.getElementById("admin-content");
-      const adminLoader = document.getElementById("admin-loader");
-      const reviewList = document.getElementById("admin-review-list");
-      const filterSelect = document.getElementById("adminFilterRating");
-      const refreshBtn = document.getElementById("refreshBtn");
-      const exportBtn = document.getElementById("exportBtn");
-      const deleteAllBtn = document.getElementById("deleteAllBtn");
-
-      function showAdminWelcome(name) {
-        const welcome = document.getElementById("admin-welcome");
-        welcome.textContent = `Welcome to Admin Panel, ${name}!`;
-        welcome.style.opacity = "1";
-        setTimeout(() => { welcome.style.opacity = "0"; }, 3000);
-      }
-
-      firebase.auth().getRedirectResult().catch(err => {
-        console.error("Redirect Error:", err.message);
-      });
-
-      firebase.auth().onAuthStateChanged(user => {
-        if (user && ADMIN_EMAILS.includes(user.email)) {
-          adminUserInfo.textContent = `Signed in as ${user.displayName} (${user.email})`;
-          adminUserInfo.style.display = "block";
-          adminLogoutBtn.style.display = "inline-block";
-          adminLoginBtn.style.display = "none";
-          adminContent.style.display = "block";
-          showAdminWelcome(user.displayName || "Admin");
-          loadAdminReviews();
-        } else {
-          adminContent.style.display = "none";
-        }
-      });
-
-      adminLoginBtn.addEventListener("click", () => {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        firebase.auth().signInWithRedirect(provider); // Always use redirect
-      });
-
-      adminLogoutBtn.addEventListener("click", () => {
-        firebase.auth().signOut().then(() => location.reload());
-      });
-
-      refreshBtn.addEventListener("click", loadAdminReviews);
-      filterSelect.addEventListener("change", loadAdminReviews);
-
-      deleteAllBtn.addEventListener("click", () => {
-        if (confirm("Are you sure you want to delete ALL feedbacks?")) {
-          firebase.database().ref("feedbacks").remove().then(() => {
-            alert("All feedbacks deleted.");
-            loadAdminReviews();
-          });
-        }
-      });
-
-      exportBtn.addEventListener("click", () => {
-        firebase.database().ref("feedbacks").once("value").then(snapshot => {
-          const data = snapshot.val();
-          if (!data) return alert("No reviews to export.");
-          const rows = [["Name", "Email", "Message", "Rating", "Date"]];
-          Object.values(data).forEach(item => {
-            rows.push([
-              item.name || "",
-              item.email || "",
-              item.message?.replace(/\n/g, " ") || "",
-              item.rating || "",
-              item.date || ""
-            ]);
-          });
-          const csv = rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
-          const blob = new Blob([csv], { type: "text/csv" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "feedbacks.csv";
-          a.click();
-        });
-      });
-
-      function loadAdminReviews() {
-        adminLoader.style.display = "block";
-        reviewList.innerHTML = "";
-        firebase.database().ref("feedbacks").once("value").then(snapshot => {
-          const data = snapshot.val();
-          let count = 0, total = 0, todayCount = 0;
-          const today = new Date().toISOString().slice(0, 10);
-          const selected = parseInt(filterSelect.value || 0);
-
-          if (data) {
-            Object.entries(data).forEach(([id, item]) => {
-              const rating = parseInt(item.rating);
-              if (!rating || (selected && rating < selected)) return;
-              total += rating;
-              count++;
-              if ((item.date || "").slice(0, 10) === today) todayCount++;
-
-              const div = document.createElement("div");
-              div.className = "review-entry";
-              div.style.cssText = "margin-bottom:10px;padding:10px;border:1px solid #ccc;border-radius:5px;";
-              div.innerHTML = `
-                <strong>${item.name || "Anonymous"}</strong> (${item.email || "No Email"})<br/>
-                <small>${item.date || "No Date"}</small><br/>
-                Rating: ${rating} ⭐<br/>
-                Message: ${item.message || "No message"}<br/>
-                <button class="admin-btn danger" onclick="deleteReview('${id}')">
-                  <i class="fas fa-trash"></i> Delete
-                </button>`;
-              reviewList.appendChild(div);
-            });
-          }
-
-          document.getElementById("total-reviews").textContent = count;
-          document.getElementById("avg-rating").textContent = count ? (total / count).toFixed(1) : "0";
-          document.getElementById("today-reviews").textContent = todayCount;
-          adminLoader.style.display = "none";
-        });
-      }
-
-      window.deleteReview = function (id) {
-        if (confirm("Delete this review?")) {
-          firebase.database().ref("feedbacks").child(id).remove().then(loadAdminReviews);
-        }
-      };
-    };
-  </script>
+  <script src="admin.js"></script>
 </body>
 </html>

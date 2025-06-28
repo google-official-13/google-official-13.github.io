@@ -15,26 +15,29 @@ window.onload = function () {
   const exportBtn = document.getElementById("exportBtn");
   const deleteAllBtn = document.getElementById("deleteAllBtn");
 
-  let currentAdmin = null;
+  function showAdminWelcome(name) {
+    const welcome = document.getElementById("admin-welcome");
+    welcome.textContent = `Welcome to Admin Panel, ${name || "Admin"}!`;
+    welcome.style.opacity = "1";
+    setTimeout(() => (welcome.style.opacity = "0"), 3000);
+  }
 
   firebase.auth().onAuthStateChanged(user => {
     if (user && ADMIN_EMAILS.includes(user.email)) {
-      currentAdmin = user;
       adminUserInfo.textContent = `Signed in as ${user.displayName} (${user.email})`;
       adminUserInfo.style.display = "block";
       adminLogoutBtn.style.display = "inline-block";
       adminLoginBtn.style.display = "none";
       adminContent.style.display = "block";
+      showAdminWelcome(user.displayName);
       loadAdminReviews();
     } else {
-      currentAdmin = null;
       adminContent.style.display = "none";
     }
   });
 
   adminLoginBtn.addEventListener("click", () => {
     const provider = new firebase.auth.GoogleAuthProvider();
-    // Use redirect for mobile safety
     if (window.innerWidth < 768) {
       firebase.auth().signInWithRedirect(provider);
     } else {
@@ -50,7 +53,7 @@ window.onload = function () {
   filterSelect.addEventListener("change", loadAdminReviews);
 
   deleteAllBtn.addEventListener("click", () => {
-    if (confirm("Are you sure you want to delete ALL feedbacks? This cannot be undone.")) {
+    if (confirm("Are you sure you want to delete ALL feedbacks?")) {
       firebase.database().ref("feedbacks").remove().then(() => {
         alert("All feedbacks deleted.");
         loadAdminReviews();
@@ -61,21 +64,18 @@ window.onload = function () {
   exportBtn.addEventListener("click", () => {
     firebase.database().ref("feedbacks").once("value").then(snapshot => {
       const data = snapshot.val();
-      if (!data) {
-        alert("No reviews to export.");
-        return;
-      }
+      if (!data) return alert("No reviews to export.");
       const rows = [["Name", "Email", "Message", "Rating", "Date"]];
       Object.values(data).forEach(item => {
         rows.push([
           item.name || "",
           item.email || "",
-          item.message?.replace(/(\r\n|\n|\r)/gm, " ") || "",
+          (item.message || "").replace(/(\r\n|\n|\r)/gm, " "),
           item.rating || "",
           item.date || ""
         ]);
       });
-      const csv = rows.map(row => row.map(v => `"${v}"`).join(",")).join("\n");
+      const csv = rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
       const blob = new Blob([csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -91,17 +91,16 @@ window.onload = function () {
     firebase.database().ref("feedbacks").once("value").then(snapshot => {
       const data = snapshot.val();
       let count = 0, total = 0, todayCount = 0;
+      const today = new Date().toISOString().slice(0, 10);
+      const selected = parseInt(filterSelect?.value || 0);
 
       if (data) {
-        const today = new Date().toISOString().slice(0, 10);
-        const selected = parseInt(filterSelect?.value || 0);
         Object.entries(data).forEach(([id, item]) => {
           const rating = parseInt(item.rating);
           if (!rating || (selected && rating < selected)) return;
 
           total += rating;
           count++;
-
           if ((item.date || "").slice(0, 10) === today) todayCount++;
 
           const div = document.createElement("div");

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>RamDev Dalwada Admin Panel</title>
-  <link rel="stylesheet" href="style.css" /> <!-- Same style.css -->
+  <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     .loader {
@@ -50,7 +50,6 @@
     .admin-btn.danger {
       background-color: #dc3545;
     }
-    /* welcome overlay */
     #admin-welcome {
       position: fixed;
       top:0;
@@ -122,9 +121,7 @@
           <i class="fas fa-trash"></i> Delete All
         </button>
       </div>
-      <div id="admin-review-list">
-        <!-- Admin reviews load here -->
-      </div>
+      <div id="admin-review-list"></div>
     </div>
   </div>
 
@@ -132,56 +129,7 @@
     <p>© 2025 Ramdev Dalwada | Developed by <span>Fenil</span></p>
   </footer>
 
-  <!-- welcome overlay -->
   <div id="admin-welcome">Welcome to Admin Panel</div>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAumqMP8xJyz29JIUme0xKqeHqFa89Zgpw",
-      authDomain: "fast-food-feedback-ad9d2.firebaseapp.com",
-      databaseURL: "https://fast-food-feedback-ad9d2-default-rtdb.firebaseio.com",
-      projectId: "fast-food-feedback-ad9d2",
-      storageBucket: "fast-food-feedback-ad9d2.appspot.com",
-      messagingSenderId: "443979330302",
-      appId: "1:443979330302:web:ac16d2bb95d44884a6abaf",
-      measurementId: "G-NV965T81WZ"
-    };
-    firebase.initializeApp(firebaseConfig);
-
-    const ADMIN_EMAILS = [
-      'ritikbhalwala1@gmail.com',
-      'malvifenil0@gmail.com'
-    ];
-
-    function showAdminWelcome(name) {
-      const welcome = document.getElementById("admin-welcome");
-      welcome.textContent = `Welcome to Admin Panel, ${name}!`;
-      welcome.style.opacity = "1";
-      setTimeout(() => {
-        welcome.style.opacity = "0";
-      }, 3000);
-    }
-
-    firebase.auth().onAuthStateChanged(user => {
-      if (user && ADMIN_EMAILS.includes(user.email)) {
-        document.getElementById("admin-content").style.display = "block";
-        document.getElementById("adminLoginBtn").style.display = "none";
-        document.getElementById("adminLogoutBtn").style.display = "inline-block";
-        document.getElementById("admin-user-info").textContent = `Signed in as ${user.displayName}`;
-        document.getElementById("admin-user-info").style.display = "block";
-        showAdminWelcome(user.displayName || "Admin");
-      }
-    });
-
-    document.getElementById("adminLoginBtn").addEventListener("click", () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      firebase.auth().signInWithPopup(provider).catch(console.error);
-    });
-
-    document.getElementById("adminLogoutBtn").addEventListener("click", () => {
-      firebase.auth().signOut().then(() => location.reload());
-    });
-  </script>
   <script src="admin-script.js"></script>
 </body>
 </html>

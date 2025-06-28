@@ -1,5 +1,3 @@
-// ready-to-paste JavaScript with threaded reviews and show-more for past reviews
-
 const form = document.getElementById("feedback-form");
 const averageDisplay = document.getElementById("average");
 const reviewList = document.getElementById("review-list");
@@ -185,17 +183,28 @@ function loadReviews() {
 
       const div = document.createElement("div");
       div.classList.add("review-entry");
-      const avatar = val.profilePic ? `<img src="${val.profilePic}" class="avatar">` : `<div class="avatar">${val.name.charAt(0).toUpperCase()}</div>`;
-      const imageTag = latest.imageUrl ? `<img src="${latest.imageUrl}" class="thumbnail" onclick="enlargeImage(this)">` : "";
+
+      const avatar = val.profilePic
+        ? `<img src="${val.profilePic}" class="avatar">`
+        : `<div class="avatar">${val.name.charAt(0).toUpperCase()}</div>`;
+
+      const imageTag = latest.imageUrl
+        ? `<img src="${latest.imageUrl}" class="thumbnail" onclick="enlargeImage(this)">`
+        : "";
 
       let pastHTML = "";
       if (reviews.length > 1) {
         pastHTML = `<button class="show-more">Show Past Reviews</button>
         <div class="past-reviews" style="display:none;">`;
         reviews.slice(1).forEach(r => {
-          pastHTML += `<div class="past-review-item">
-            ${r.message} - ${getMoodTag(r.rating)} <span class="review-time">(${timeAgo(r.date)})</span>
-          </div>`;
+          pastHTML += `
+            <div class="past-review-item">
+              <div class="review-text">${r.message}</div>
+              <div class="review-footer">
+                <span class="mood-tag">${getMoodTag(r.rating)}</span>
+                <span class="review-time">(${timeAgo(r.date)})</span>
+              </div>
+            </div>`;
         });
         pastHTML += `</div>`;
       }
@@ -208,7 +217,7 @@ function loadReviews() {
             <span class="email">${val.email}</span>
           </div>
         </div>
-        <div style="margin:10px 0;">${latest.message}</div>
+        <div class="review-text">${latest.message}</div>
         ${imageTag}
         <div class="review-footer">
           <span class="mood-tag">${getMoodTag(latest.rating)}</span>
@@ -218,6 +227,7 @@ function loadReviews() {
       `;
       reviewList.appendChild(div);
     });
+
     averageDisplay.textContent = count ? `${(total/count).toFixed(1)} / 5` : "N/A";
     document.getElementById("reviewCount").textContent = count ? `${count} Reviews` : "";
     loader.style.display = "none";

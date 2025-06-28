@@ -38,19 +38,6 @@ h1 {
   animation: fadeInDown 1s ease;
 }
 
-.contact-info p {
-  margin-bottom: 6px;
-  font-size: 14px;
-}
-
-.phone-link {
-  color: #333;
-  text-decoration: none;
-}
-.phone-link:hover {
-  color: #FFC107;
-}
-
 label {
   display: block;
   margin-top: 20px;
@@ -88,23 +75,6 @@ button {
 button:hover {
   background: #ffb300;
   transform: scale(1.03);
-}
-
-.custom-upload-btn {
-  display: inline-block;
-  margin-top: 8px;
-  background: rgba(0,0,0,0.05);
-  color: #FFC107;
-  padding: 10px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-}
-.custom-upload-btn i {
-  margin-right: 6px;
-}
-#imageUpload {
-  display: none;
 }
 
 #loader {
@@ -148,9 +118,6 @@ button:hover {
   margin-top: 25px;
   text-align: center;
 }
-.filter-container label {
-  margin-right: 8px;
-}
 #filterRating {
   padding: 10px 14px;
   background: rgba(0,0,0,0.05);
@@ -159,7 +126,6 @@ button:hover {
   border-radius: 8px;
   font-size: 14px;
   outline: none;
-  transition: background .3s ease;
 }
 #filterRating:hover,
 #filterRating:focus {
@@ -177,22 +143,19 @@ button:hover {
 .review-entry {
   margin-bottom: 25px;
   padding: 15px 10px;
-  background: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.9);
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   transition: transform .2s ease;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-.review-entry:hover {
-  transform: translateY(-3px);
-  background: rgba(255,255,255,0.9);
-}
-
 .review-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 5px;
 }
 .avatar {
   width: 35px;
@@ -216,15 +179,24 @@ button:hover {
 .review-user-info {
   display: flex;
   flex-direction: column;
+  justify-content: center;
 }
 .review-user-info .name {
   font-weight: bold;
   color: #000;
+  font-size: 14px;
+  line-height: 1.2;
 }
 .review-user-info .email {
   font-size: 11px;
   color: #555;
   word-break: break-word;
+}
+
+.review-text {
+  font-size: 15px;
+  line-height: 1.4;
+  margin: 8px 0;
 }
 
 .thumbnail {
@@ -236,33 +208,12 @@ button:hover {
   cursor: pointer;
 }
 
-.like-circle {
-  position: absolute;
-  bottom: -14px;
-  right: 10px;
-  background: rgba(255,255,255,0.9);
-  border: 2px solid #FFC107;
-  color: #FFC107;
-  border-radius: 50%;
-  width: 42px;
-  height: 42px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 18px;
-  z-index: 1;
-  transition: transform .2s ease;
-}
-.like-circle:hover {
-  transform: scale(1.2) rotate(-10deg);
-}
-
 .review-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 18px;
   font-size: 13px;
+  margin-top: 10px;
   flex-wrap: wrap;
 }
 .mood-tag {
@@ -273,36 +224,31 @@ button:hover {
   color: #555;
 }
 
-/* 3-dot Menu */
-.three-dot-menu {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  cursor: pointer;
-}
-.menu-dropdown {
-  display: none;
-  position: absolute;
-  right: 0;
-  top: 24px;
-  background: #fff;
+.show-more {
+  background: rgba(0,0,0,0.05);
+  color: #000;
   border: 1px solid #ddd;
+  padding: 5px 10px;
   border-radius: 5px;
-  min-width: 100px;
-  z-index: 100;
-}
-.menu-dropdown button {
-  width: 100%;
-  background: none;
-  color: #333;
-  border: none;
-  text-align: left;
-  padding: 8px 12px;
-  font-size: 14px;
   cursor: pointer;
+  margin-top: 5px;
+  font-size: 12px;
 }
-.menu-dropdown button:hover {
-  background: #eee;
+.show-more:hover {
+  background: rgba(0,0,0,0.1);
+}
+
+.past-reviews {
+  margin-top: 8px;
+  border-top: 1px solid #ddd;
+  padding-top: 8px;
+}
+.past-review-item {
+  background: rgba(255,255,255,0.6);
+  border-radius: 6px;
+  padding: 5px 8px;
+  margin-top: 4px;
+  font-size: 13px;
 }
 
 /* Modal */
@@ -322,7 +268,6 @@ button:hover {
   max-width: 90%;
   max-height: 90vh;
   border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.5);
   animation: zoomIn .3s ease;
 }
 #image-modal .close-btn {
@@ -353,20 +298,6 @@ button:hover {
   transform: translateY(0);
 }
 
-/* Footer */
-.developer-credit {
-  margin-top: 40px;
-  padding: 15px;
-  background: rgba(255,255,255,0.85);
-  border-radius: 10px;
-  font-size: 14px;
-  color: #333;
-}
-.developer-credit span {
-  color: #FFC107;
-  font-weight: 600;
-}
-
 /* Animations */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
@@ -379,12 +310,4 @@ button:hover {
 @keyframes zoomIn {
   from { transform: scale(0.8); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
-}
-@keyframes shake {
-  0% { transform: translateX(0); }
-  20% { transform: translateX(-5px); }
-  40% { transform: translateX(5px); }
-  60% { transform: translateX(-5px); }
-  80% { transform: translateX(5px); }
-  100% { transform: translateX(0); }
 }

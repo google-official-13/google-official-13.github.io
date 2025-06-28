@@ -1,0 +1,967 @@
+html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fast Food Feedback</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>RamDev Dalwada</h1>
+    <div class="contact-info">
+      <p>📍 Best Taste in Town</p>
+      <p>📧 ritikbhalwala1@gmail.com</p>
+      <p>📞 <a href="tel:+919033561438" class="phone-link">+91 90335 61438</a></p>
+    </div>
+
+    <div id="login-section">
+      <button id="loginBtn">🔐 Sign in with Google</button>
+      <p id="user-info" style="display:none;"></p>
+    </div>
+
+    <form id="feedback-form" style="display:none;">
+      <label>Name:</label>
+      <input type="text" name="name" required>
+
+      <label>Email:</label>
+      <input type="email" name="email" required>
+
+      <label>Feedback:</label>
+      <textarea name="message" required></textarea>
+
+      <label>Rating:</label>
+      <div class="stars">
+        <input type="radio" id="star5" name="rating" value="5" required><label for="star5">★</label>
+        <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
+        <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
+        <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
+        <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
+      </div>
+
+      <label>Upload Image:</label>
+      <label for="imageUpload" class="custom-upload-btn">
+        <i class="fas fa-camera"></i> Upload Image
+      </label>
+      <input type="file" id="imageUpload" accept="image/*" />
+
+      <div id="loader">⏳ Uploading image...</div>
+      <button type="submit">Submit Feedback</button>
+    </form>
+
+    <div id="popup" class="popup">✅ Feedback submitted successfully!</div>
+
+    <div id="avg-rating">
+      <h2>⭐ Average Rating: <span id="average">N/A</span></h2>
+      <p id="reviewCount" style="font-size: 16px; color: #ccc; margin-top: 4px;"></p>
+    </div>
+
+    <div class="filter-container">
+      <label>Filter by Rating:</label>
+      <select id="filterRating">
+        <option value="">All</option>
+        <option value="5">Only 5 Stars</option>
+        <option value="4">4 Stars & up</option>
+        <option value="3">3 Stars & up</option>
+      </select>
+    </div>
+
+    <div id="review-list"></div>
+  </div>
+
+  <footer class="developer-credit">
+    <p>© 2025 Ramdev Dalwada | Developed by <span>Fenil</span></p>
+  </footer>
+
+  <div id="image-modal" onclick="this.style.display='none'">
+    <img id="modal-img" src="" alt="Full Image">
+    <span class="close-btn"><i class="fas fa-times"></i></span>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAumqMP8xJyz29JIUme0xKqeHqFa89Zgpw",
+      authDomain: "fast-food-feedback-ad9d2.firebaseapp.com",
+      databaseURL: "https://fast-food-feedback-ad9d2-default-rtdb.firebaseio.com",
+      projectId: "fast-food-feedback-ad9d2",
+      storageBucket: "fast-food-feedback-ad9d2.appspot.com",
+      messagingSenderId: "443979330302",
+      appId: "1:443979330302:web:ac16d2bb95d44884a6abaf",
+      measurementId: "G-NV965T81WZ"
+    };
+    firebase.initializeApp(firebaseConfig);
+    emailjs.init("b2bU5JAhe0VtZv5al");
+  </script>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
+
+
+
+css
+
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Playfair+Display:wght@600&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.85)), url('Moong Dal Vada.jpg') no-repeat center center fixed;
+  background-size: cover;
+  color: #f5f5f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.container {
+  width: 95%;
+  max-width: 600px;
+  background: rgba(0,0,0,0.4);
+  padding: 30px 10px;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.1);
+  animation: fadeInUp 1s ease;
+}
+
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px;
+  color: #FFC107;
+  text-align: center;
+  margin-bottom: 30px;
+  animation: fadeInDown 1s ease;
+}
+
+.contact-info p {
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.phone-link {
+  color: #f5f5f5;
+  text-decoration: none;
+}
+.phone-link:hover {
+  color: #FFC107;
+}
+
+label {
+  display: block;
+  margin-top: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fdf6e3;
+}
+
+input, textarea {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px 10px;
+  background: rgba(0,0,0,0.3);
+  border: none;
+  border-bottom: 2px solid #FFC107;
+  border-radius: 5px;
+  font-size: 15px;
+  color: #fff;
+  outline: none;
+}
+
+button {
+  width: 100%;
+  margin-top: 25px;
+  padding: 12px;
+  background: #FFC107;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background .3s ease;
+}
+button:hover {
+  background: #ffb300;
+}
+
+.custom-upload-btn {
+  display: inline-block;
+  margin-top: 8px;
+  background: rgba(255,255,255,0.1);
+  color: #FFC107;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.custom-upload-btn i {
+  margin-right: 6px;
+}
+#imageUpload {
+  display: none;
+}
+
+#loader {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #ccc;
+}
+
+.stars {
+  display: flex;
+  justify-content: center;
+  flex-direction: row-reverse;
+  margin-top: 10px;
+}
+.stars input {
+  display: none;
+}
+.stars label {
+  font-size: 35px;
+  padding: 0 4px;
+  cursor: pointer;
+  color: #888;
+}
+.stars input:checked ~ label,
+.stars label:hover,
+.stars label:hover ~ label {
+  color: #FFC107;
+}
+
+#avg-rating {
+  text-align: center;
+  margin-top: 30px;
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+.filter-container {
+  margin-top: 25px;
+  text-align: center;
+}
+.filter-container label {
+  margin-right: 8px;
+}
+#filterRating {
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  appearance: none;
+  backdrop-filter: blur(6px);
+  transition: background .3s ease;
+}
+#filterRating:hover,
+#filterRating:focus {
+  background: rgba(255,255,255,0.15);
+}
+
+#review-list {
+  margin-top: 30px;
+  padding: 20px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 10px;
+}
+
+/* Review Entry */
+.review-entry {
+  margin-bottom: 25px;
+  padding: 15px 10px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  transition: transform .2s ease;
+  position: relative;
+}
+.review-entry:hover {
+  transform: translateY(-3px);
+  background: rgba(255,255,255,0.08);
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+.avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: #FFC107;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  font-weight: bold;
+  color: #000;
+}
+.avatar img {
+  width: 35px;
+  height: 35px;
+  object-fit: cover;
+}
+
+.review-user-info {
+  display: flex;
+  flex-direction: column;
+}
+.review-user-info .name {
+  font-weight: bold;
+  color: #fff;
+}
+.review-user-info .email {
+  font-size: 11px;
+  color: #ccc;
+  word-break: break-word;
+}
+
+/* Message styling */
+.review-entry .emoji-feedback {
+  font-size: 24px !important;
+  margin: 16px 0;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.thumbnail {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+/* Reply actions */
+.reply-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+  position: relative;
+}
+.reply-btn {
+  background: none;
+  border: none;
+  color: #FFC107;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+.reply-btn i {
+  font-size: 16px;
+  transition: transform 0.2s ease;
+}
+.reply-btn:hover i {
+  transform: scale(1.3);
+}
+
+/* Like Circle */
+.like-circle {
+  position: absolute;
+  bottom: -14px;
+  right: 10px;
+  background: rgba(255,255,255,0.1);
+  border: 2px solid #FFC107;
+  color: #FFC107;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  z-index: 1;
+}
+.like-circle i {
+  margin-right: 4px;
+}
+
+/* Footer */
+.review-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 18px;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+.mood-tag {
+  color: #FFC107;
+}
+.review-time {
+  font-size: 12px;
+  color: #ccc;
+}
+
+/* Reply Section */
+.reply-section {
+  margin-top: 12px;
+  padding-left: 20px;
+  border-left: 2px solid rgba(255,255,255,0.1);
+}
+.reply-entry {
+  margin-top: 10px;
+  background: rgba(255,255,255,0.05);
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #eee;
+  position: relative;
+}
+.reply-entry .review-time {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 11px;
+}
+.reply-box {
+  display: none;
+  margin-top: 10px;
+}
+.reply-box textarea {
+  width: 100%;
+  padding: 8px;
+  background: rgba(0,0,0,0.2);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  resize: none;
+  font-size: 14px;
+}
+.reply-box button {
+  margin-top: 6px;
+  padding: 6px 12px;
+  background: #FFC107;
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* 3-dot Menu */
+.three-dot-menu {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+.menu-dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 24px;
+  background: #222;
+  border: 1px solid #333;
+  border-radius: 5px;
+  min-width: 100px;
+  z-index: 100;
+}
+.menu-dropdown button {
+  width: 100%;
+  background: none;
+  color: #fff;
+  border: none;
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.menu-dropdown button:hover {
+  background: #444;
+}
+
+/* Modal */
+#image-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+#image-modal img {
+  max-width: 90%;
+  max-height: 90vh;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  animation: zoomIn .3s ease;
+}
+#image-modal .close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 24px;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Popup */
+.popup {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #FFC107;
+  color: #000;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity .4s ease, transform .3s ease;
+  z-index: 999;
+}
+.popup.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Developer Footer */
+.developer-credit {
+  margin-top: 40px;
+  padding: 15px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 10px;
+  font-size: 14px;
+  color: #f5f5f5;
+}
+.developer-credit span {
+  color: #FFC107;
+  font-weight: 600;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes zoomIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+      
+
+js
+
+
+// =============== FULL FINAL VERSION (paste directly) =================
+
+const form = document.getElementById("feedback-form");
+const averageDisplay = document.getElementById("average");
+const reviewList = document.getElementById("review-list");
+const popup = document.getElementById("popup");
+const loader = document.getElementById("loader");
+const filterRating = document.getElementById("filterRating");
+
+const db = firebase.database().ref("feedbacks");
+const imgbbAPIKey = "3a01fad3d6c23d5bab709c94eae3b9c9";
+
+let deviceId = localStorage.getItem("deviceId");
+if (!deviceId) {
+  deviceId = crypto.randomUUID();
+  localStorage.setItem("deviceId", deviceId);
+}
+
+let currentUser = null;
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
+    form.name.value = user.displayName || "";
+    form.email.value = user.email || "";
+    form.name.readOnly = true;
+    form.email.readOnly = true;
+    form.style.display = "block";
+    document.getElementById("user-info").innerText = `Signed in as ${user.displayName}`;
+    document.getElementById("user-info").style.display = "block";
+    document.getElementById("loginBtn").style.display = "none";
+  } else {
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithPopup(provider).catch(console.error);
+    });
+  }
+});
+
+function timeAgo(date) {
+  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+  const intervals = { year: 31536000, month: 2592000, week: 604800, day: 86400, hour: 3600, minute: 60 };
+  for (let unit in intervals) {
+    const value = Math.floor(seconds / intervals[unit]);
+    if (value >= 1) return `${value} ${unit}${value > 1 ? "s" : ""} ago`;
+  }
+  return "Just now";
+}
+
+function showPopup() {
+  popup.classList.add("show");
+  setTimeout(() => popup.classList.remove("show"), 3000);
+}
+
+form.addEventListener("submit", function (e) {
+  e.preventDefault();
+  const name = form.name.value.trim();
+  const email = form.email.value.trim();
+  const message = form.message.value.trim();
+  const rating = parseInt(form.rating.value);
+  const imageFile = document.getElementById("imageUpload").files[0];
+
+  loader.style.display = "block";
+
+  const feedback = {
+    name,
+    email,
+    message,
+    rating,
+    imageUrl: null,
+    profilePic: currentUser?.photoURL || null,
+    date: new Date().toISOString(),
+    deviceId,
+    userId: currentUser?.uid || null,
+    likes: [],
+    replies: {}
+  };
+
+  const uploadAndSave = (imageUrl = null) => {
+    feedback.imageUrl = imageUrl;
+    db.push(feedback);
+    form.reset();
+    loader.style.display = "none";
+    showPopup();
+    setTimeout(loadReviews, 500);
+  };
+
+  if (imageFile) {
+    if (!imageFile.type.startsWith("image/")) {
+      alert("Please upload a valid image file.");
+      loader.style.display = "none";
+      return;
+    }
+    if (imageFile.size > 5 * 1024 * 1024) {
+      alert("Image is too large. Please upload under 5MB.");
+      loader.style.display = "none";
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", imageFile);
+
+    fetch(`https://api.imgbb.com/1/upload?key=${imgbbAPIKey}`, {
+      method: "POST",
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data?.url) {
+          uploadAndSave(data.data.url);
+        } else {
+          alert("Image upload failed. Please try again.");
+          loader.style.display = "none";
+        }
+      })
+      .catch(() => {
+        alert("Image upload failed. Check your internet connection.");
+        loader.style.display = "none";
+      });
+  } else {
+    uploadAndSave();
+  }
+});
+
+function getMoodTag(rating) {
+  if (rating >= 5) return '<i class="fas fa-face-grin-stars"></i> Loved it!';
+  if (rating === 4) return '<i class="fas fa-thumbs-up"></i> Good';
+  if (rating === 3) return '<i class="fas fa-meh"></i> Okay';
+  return '<i class="fas fa-thumbs-down"></i> Needs Work';
+}
+
+function enlargeImage(img) {
+  const modal = document.getElementById("image-modal");
+  const modalImg = document.getElementById("modal-img");
+  modalImg.src = img.src;
+  modal.style.display = "flex";
+}
+
+document.getElementById("image-modal").addEventListener("click", () => {
+  document.getElementById("image-modal").style.display = "none";
+});
+
+function toggleLike(feedbackId) {
+  const ref = db.child(feedbackId).child("likes");
+  ref.once("value", snap => {
+    let likes = snap.val() || [];
+    const uid = currentUser?.uid || deviceId;
+    const index = likes.indexOf(uid);
+    if (index > -1) likes.splice(index, 1);
+    else likes.push(uid);
+    ref.set(likes).then(loadReviews);
+  });
+}
+
+function toggleReplyBox(btn) {
+  const box = btn.closest(".review-entry").querySelector(".reply-box");
+  if (box) {
+    box.style.display = box.style.display === "block" ? "none" : "block";
+    const textarea = box.querySelector("textarea");
+    setTimeout(() => {
+      textarea.focus();
+      textarea.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+  }
+}
+
+// EmailJS reply notification
+function sendEmail(to, msg, sender) {
+  emailjs.send("service_exqnwp4", "template_abc123", {
+    to_email: to,
+    message: msg,
+    sender_name: sender
+  }, "b2bU5JAhe0VtZv5al").then(() => {
+    console.log("Email sent!");
+  }).catch(console.error);
+}
+
+function submitReply(feedbackId, textarea, parentReplyId = null, originalEmail = "") {
+  const replyText = textarea.value.trim();
+  if (!replyText) return;
+  const reply = {
+    message: replyText,
+    name: currentUser.displayName,
+    email: currentUser.email,
+    userId: currentUser.uid,
+    profilePic: currentUser.photoURL || null,
+    date: new Date().toISOString(),
+    likes: [],
+    replies: {}
+  };
+
+  const ref = parentReplyId
+    ? db.child(feedbackId).child("replies").child(parentReplyId).child("replies")
+    : db.child(feedbackId).child("replies");
+
+  ref.push(reply).then(() => {
+    if (originalEmail && currentUser.email !== originalEmail) {
+      sendEmail(originalEmail, replyText, currentUser.displayName);
+    }
+    loadReviews();
+  });
+}
+
+function deleteReply(feedbackId, replyId, parentId = null) {
+  const ref = parentId
+    ? db.child(feedbackId).child("replies").child(parentId).child("replies").child(replyId)
+    : db.child(feedbackId).child("replies").child(replyId);
+  ref.remove().then(loadReviews);
+}
+
+function editReply(feedbackId, replyId, oldMsg, date, parentId = null) {
+  const diff = (new Date() - new Date(date)) / 60000;
+  if (diff > 5) return alert("You can only edit within 5 minutes");
+  const newMsg = prompt("Edit your reply:", oldMsg);
+  if (newMsg && newMsg.trim()) {
+    const ref = parentId
+      ? db.child(feedbackId).child("replies").child(parentId).child("replies").child(replyId)
+      : db.child(feedbackId).child("replies").child(replyId);
+    ref.update({ message: newMsg.trim() }).then(loadReviews);
+  }
+}
+
+function toggleMenu(btn) {
+  const menu = btn.nextElementSibling;
+  document.querySelectorAll(".menu-dropdown").forEach(m => {
+    if (m !== menu) m.style.display = "none";
+  });
+  menu.style.display = menu.style.display === "block" ? "none" : "block";
+  document.addEventListener("click", function handler(e) {
+    if (!menu.contains(e.target) && !btn.contains(e.target)) {
+      menu.style.display = "none";
+      document.removeEventListener("click", handler);
+    }
+  });
+}
+
+function renderReplies(repliesObj, feedbackId, parentId = null, originalEmail = "") {
+  let html = "";
+  for (const [rid, rep] of Object.entries(repliesObj || {})) {
+    const canEdit = currentUser && currentUser.uid === rep.userId;
+    const diff = (new Date() - new Date(rep.date)) / 60000;
+    const menu = canEdit ? `
+      <div class="three-dot-menu">
+        <i class="fas fa-ellipsis-v" onclick="toggleMenu(this)"></i>
+        <div class="menu-dropdown">
+          ${diff < 5 ? `<button onclick="editReply('${feedbackId}', '${rid}', '${escapeQuotes(rep.message)}', '${rep.date}', '${parentId || ""}')">Edit</button>` : ""}
+          <button onclick="deleteReply('${feedbackId}', '${rid}', '${parentId || ""}')">Delete</button>
+        </div>
+      </div>` : "";
+
+    // avatar for reply
+    const avatar = rep.profilePic
+      ? `<img src="${rep.profilePic}" class="avatar">`
+      : `<div class="avatar">${rep.name.charAt(0).toUpperCase()}</div>`;
+
+    const nestedHTML = renderReplies(rep.replies, feedbackId, rid, rep.email);
+    html += `
+      <div class="reply-entry">
+        ${menu}
+        <div class="review-header">
+          ${avatar}
+          <div class="review-user-info">
+            <span class="name">${rep.name}</span>
+            <span class="review-time">· ${timeAgo(rep.date)}</span>
+          </div>
+        </div>
+        <div style="margin-top:6px;">${rep.message}</div>
+        ${currentUser ? `
+        <div class="reply-box" style="display:none;">
+          <textarea placeholder="Write a reply..."></textarea>
+          <button onclick="submitReply('${feedbackId}', this.previousElementSibling, '${rid}', '${rep.email}')">Send</button>
+        </div>
+        <button class="reply-btn nested" onclick="toggleReplyBox(this)"><i class="fas fa-reply"></i></button>
+        ` : ""}
+        ${nestedHTML}
+      </div>`;
+  }
+  return html;
+}
+
+
+function loadReviews() {
+  db.once("value", snapshot => {
+    const data = snapshot.val();
+    if (!data) {
+      reviewList.innerHTML = "";
+      averageDisplay.textContent = "N/A";
+      return;
+    }
+
+    const entriesByUser = {};
+    Object.entries(data).forEach(([id, val]) => {
+      const key = val.userId || val.deviceId;
+      if (!entriesByUser[key]) entriesByUser[key] = [];
+      entriesByUser[key].push({ id, ...val });
+    });
+
+    const selectedRating = parseInt(filterRating.value || "0");
+
+    let total = 0, count = 0;
+    reviewList.innerHTML = "";
+
+    Object.values(entriesByUser).forEach(userReviews => {
+      userReviews.sort((a, b) => new Date(b.date) - new Date(a.date));
+      const latestReview = userReviews[0];
+      if (selectedRating && latestReview.rating < selectedRating) return;
+
+      total += latestReview.rating;
+      count++;
+
+      const div = document.createElement("div");
+      div.classList.add("review-entry");
+
+      const avatar = latestReview.profilePic
+        ? `<img src="${latestReview.profilePic}" class="avatar">`
+        : `<div class="avatar">${latestReview.name.charAt(0).toUpperCase()}</div>`;
+
+      const imageTag = latestReview.imageUrl
+        ? `<img src="${latestReview.imageUrl}" class="thumbnail" onclick="enlargeImage(this)">`
+        : "";
+
+      const uid = currentUser?.uid || deviceId;
+      const isLiked = latestReview.likes?.includes(uid);
+      const likeIcon = isLiked ? "fas" : "far";
+
+      const likeBtn = `
+        <div class="like-circle" onclick="toggleLike('${latestReview.id}')">
+          <i class="${likeIcon} fa-thumbs-up"></i>
+          <span>${latestReview.likes?.length || 0}</span>
+        </div>`;
+
+      const replyBtn = currentUser
+        ? `<button class="reply-btn main" onclick="toggleReplyBox(this)"><i class="fas fa-reply"></i></button>`
+        : "";
+
+      const repliesHTML = renderReplies(latestReview.replies, latestReview.id, null, latestReview.email);
+
+      // add collapsible for past reviews
+      const pastReviews = userReviews.slice(1).map(pr => `
+        <div class="reply-entry">
+          <strong>${pr.name}</strong>: ${pr.message}
+          <span class="review-time">· ${timeAgo(pr.date)}</span>
+        </div>
+      `).join("");
+
+      const pastReviewsHTML = pastReviews
+        ? `<details style="margin-top:10px;"><summary>Show past reviews</summary>${pastReviews}</details>`
+        : "";
+
+      const replyBox = currentUser
+        ? `<div class="reply-box" style="display:none;">
+             <textarea placeholder="Write a reply..."></textarea>
+             <button onclick="submitReply('${latestReview.id}', this.previousElementSibling, null, '${latestReview.email}')">Send</button>
+           </div>` : "";
+
+      div.innerHTML = `
+        <div class="review-header">
+          ${avatar}
+          <div class="review-user-info">
+            <span class="name">${latestReview.name}</span>
+            <span class="email">${latestReview.email}</span>
+          </div>
+        </div>
+        <div style="margin: 10px 0;">${latestReview.message}</div>
+        ${imageTag}
+        ${likeBtn}
+        <div class="review-footer">
+          <span class="mood-tag">${getMoodTag(latestReview.rating)}</span>
+          <span class="review-time">${timeAgo(latestReview.date)}</span>
+          ${replyBtn}
+        </div>
+        <div class="reply-section">
+          ${repliesHTML}
+          ${replyBox}
+          ${pastReviewsHTML}
+        </div>
+      `;
+      reviewList.appendChild(div);
+    });
+
+    averageDisplay.textContent = count ? `${(total / count).toFixed(1)} / 5` : "N/A";
+    document.getElementById("reviewCount").textContent = count ? `${count} Reviews` : "";
+    loader.style.display = "none";
+  });
+}
+
+filterRating.addEventListener("change", loadReviews);
+loadReviews();
+// ================= END =====================

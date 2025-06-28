@@ -1,100 +1,80 @@
+/* admin-style.css */
 body {
   margin: 0;
-  font-family: "Segoe UI", sans-serif;
-  background: #121212;
-  color: #f1f1f1;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(120deg, #000000, #1e1e1e);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
 }
 
-.admin-container {
-  max-width: 900px;
-  margin: 50px auto;
-  padding: 30px;
-  background: #1e1e1e;
+.login-container {
+  background: #141414;
+  padding: 40px 30px;
   border-radius: 16px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.5);
-  animation: fadeIn 1s ease-in-out;
-}
-
-.welcome-text {
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
   text-align: center;
-  font-size: 28px;
-  color: #00d4ff;
-  margin-bottom: 30px;
-  animation: slideDown 1s ease;
+  width: 100%;
+  max-width: 380px;
+  animation: fadeIn 1s ease;
 }
 
-button {
-  background-color: #00d4ff;
-  color: #000;
-  border: none;
-  padding: 12px 20px;
+.login-container h2 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.login-container .sub {
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 25px;
+}
+
+.login-container input {
+  width: 100%;
+  padding: 12px 14px;
+  margin: 10px 0;
   border-radius: 8px;
-  cursor: pointer;
-  margin: 5px;
-  font-weight: bold;
+  border: none;
+  background: #2a2a2a;
+  color: white;
+  font-size: 16px;
   transition: all 0.3s ease;
 }
 
-button:hover {
-  background-color: #00aacc;
+.login-container input:focus {
+  outline: none;
+  background: #333;
 }
 
-.hidden {
-  display: none;
-}
-
-.admin-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #222;
-  padding: 10px 20px;
+.login-container button {
+  width: 100%;
+  padding: 12px;
+  border: none;
   border-radius: 8px;
-  margin-bottom: 20px;
+  background: #00b894;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: background 0.3s;
 }
 
-.admin-actions {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
+.login-container button:hover {
+  background: #019875;
 }
 
-#stats {
-  margin-bottom: 30px;
+.login-container .note {
+  margin-top: 15px;
+  font-size: 13px;
+  color: #888;
 }
 
-.feedback-card {
-  background: #2a2a2a;
-  border-left: 4px solid #00d4ff;
-  padding: 15px;
-  margin-bottom: 15px;
-  border-radius: 10px;
-}
-
-.feedback-card p {
-  margin: 5px 0;
-}
-
-.feedback-card img.thumb {
-  width: 80px;
-  height: auto;
-  margin-top: 10px;
-  border-radius: 6px;
-}
-
-/* Animations */
 @keyframes fadeIn {
-  from { opacity: 0 }
-  to { opacity: 1 }
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }

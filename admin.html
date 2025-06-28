@@ -1,42 +1,36 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin Panel - Feedback Manager</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel Login</title>
   <link rel="stylesheet" href="admin-style.css" />
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"></script>
 </head>
 <body>
-  <div class="admin-container">
-    <h1 class="welcome-text">👋 Welcome to Admin Panel</h1>
-
-    <div id="login-section">
-      <button id="login-btn">🔐 Sign in with Google</button>
-    </div>
-
-    <div id="admin-section" class="hidden">
-      <div class="admin-header">
-        <p id="admin-email"></p>
-        <button id="logout-btn">🚪 Logout</button>
-      </div>
-
-      <div class="admin-actions">
-        <button id="export-btn">📤 Export to CSV</button>
-        <button id="delete-all-btn">🗑️ Delete All Feedback</button>
-      </div>
-
-      <div id="stats">
-        <p>Total Reviews: <span id="total-reviews">0</span></p>
-        <p>Average Rating: <span id="average-rating">0</span></p>
-      </div>
-
-      <h2>📋 All Feedbacks</h2>
-      <div id="feedback-list"></div>
-    </div>
+  <div class="login-container">
+    <h2>🔒 Welcome Admin</h2>
+    <p class="sub">Sign in to manage feedback</p>
+    <input type="email" id="email" placeholder="Admin Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button id="loginBtn">Sign In</button>
+    <p class="note">Only authorized admin emails are allowed.</p>
   </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCUyWy3A6FV4NwobM5abPoZ06kn2cQw-9c",
+      authDomain: "fast-food-feedback.firebaseapp.com",
+      databaseURL: "https://fast-food-feedback-default-rtdb.firebaseio.com",
+      projectId: "fast-food-feedback",
+      storageBucket: "fast-food-feedback.appspot.com",
+      messagingSenderId: "347264169976",
+      appId: "1:347264169976:web:14a7012e792b2582a90145"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
 
   <script src="admin.js"></script>
 </body>

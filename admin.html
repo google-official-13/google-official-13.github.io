@@ -96,10 +96,8 @@
       };
       firebase.initializeApp(firebaseConfig);
 
-      // Handle mobile redirect login
-      firebase.auth().getRedirectResult().catch(console.error);
-
       const ADMIN_EMAILS = ["ritikbhalwala1@gmail.com", "malvifenil0@gmail.com"];
+
       const adminLoginBtn = document.getElementById("adminLoginBtn");
       const adminLogoutBtn = document.getElementById("adminLogoutBtn");
       const adminUserInfo = document.getElementById("admin-user-info");
@@ -118,6 +116,10 @@
         setTimeout(() => { welcome.style.opacity = "0"; }, 3000);
       }
 
+      firebase.auth().getRedirectResult().catch(err => {
+        console.error("Redirect Error:", err.message);
+      });
+
       firebase.auth().onAuthStateChanged(user => {
         if (user && ADMIN_EMAILS.includes(user.email)) {
           adminUserInfo.textContent = `Signed in as ${user.displayName} (${user.email})`;
@@ -134,13 +136,7 @@
 
       adminLoginBtn.addEventListener("click", () => {
         const provider = new firebase.auth.GoogleAuthProvider();
-        const isMobile = window.innerWidth < 768;
-        const isInsecure = location.protocol !== "https:" && location.hostname !== "localhost";
-        if (isMobile || isInsecure) {
-          firebase.auth().signInWithRedirect(provider);
-        } else {
-          firebase.auth().signInWithPopup(provider).catch(console.error);
-        }
+        firebase.auth().signInWithRedirect(provider); // Always use redirect
       });
 
       adminLogoutBtn.addEventListener("click", () => {

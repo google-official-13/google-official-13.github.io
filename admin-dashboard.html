@@ -1,0 +1,48 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="admin-dashboard.css">
+</head>
+<body>
+  <div class="dashboard">
+    <h1>📊 Admin Dashboard</h1>
+    <div class="stats">
+      <div>Total Reviews: <span id="totalReviews">0</span></div>
+      <div>Average Rating: <span id="avgRating">0</span></div>
+      <div>Total Likes: <span id="totalLikes">0</span></div>
+    </div>
+
+    <button id="exportBtn">📤 Export CSV</button>
+
+    <div class="password-change">
+      <h3>Change Password</h3>
+      <input type="password" id="currentPassword" placeholder="Current Password">
+      <input type="password" id="newPassword" placeholder="New Password">
+      <button id="changePasswordBtn">Update Password</button>
+    </div>
+
+    <div id="reviewList"></div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCUyWy3A6FV4NwobM5abPoZ06kn2cQw-9c",
+      authDomain: "fast-food-feedback.firebaseapp.com",
+      databaseURL: "https://fast-food-feedback-default-rtdb.firebaseio.com",
+      projectId: "fast-food-feedback",
+      storageBucket: "fast-food-feedback.appspot.com",
+      messagingSenderId: "347264169976",
+      appId: "1:347264169976:web:14a7012e792b2582a90145"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+  <script src="admin-dashboard.js"></script>
+</body>
+</html>

@@ -1,44 +1,52 @@
+<!-- admin.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Admin Panel</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - RamDev Feedback</title>
   <link rel="stylesheet" href="admin-style.css">
 </head>
 <body>
-  <div id="login-section">
+  <div id="login-screen" class="screen">
     <div class="login-box">
       <h2>Welcome Admin</h2>
-      <input id="admin-email-input" type="email" placeholder="Email" />
-      <input id="admin-password-input" type="password" placeholder="Password" />
+      <input id="admin-email" type="email" placeholder="Email" />
+      <input id="admin-password" type="password" placeholder="Password" />
       <button id="login-btn">Login</button>
-      <div id="login-error"></div>
+      <p id="login-error"></p>
     </div>
   </div>
 
-  <div class="admin-layout" style="display: none;">
-    <div class="sidebar">
-      <div class="logo">Admin</div>
-      <div class="nav">
+  <div id="dashboard-screen" class="screen hidden">
+    <aside class="sidebar">
+      <div class="logo">🍔 RamDev Admin</div>
+      <nav>
         <a href="#" class="active">Dashboard</a>
-      </div>
-    </div>
-    <div class="main-panel">
+        <button id="logout-btn">Logout</button>
+      </nav>
+    </aside>
+    <main class="main-content">
       <div class="welcome-banner">
         <h1>Welcome to Admin Panel</h1>
-        <p>Logged in as: <span id="logged-email"></span></p>
-        <button id="logout-btn" class="delete-btn">Logout</button>
+        <p id="logged-email"></p>
       </div>
-      <div class="dashboard-stats">
-        <div class="stat-box"><h3>Total Reviews</h3><p id="total-reviews">0</p></div>
-        <div class="stat-box"><h3>Average Rating</h3><p id="average-rating">0.0</p></div>
+      <div class="stats">
+        <div class="card"><h3>Total Reviews</h3><p id="total-reviews">0</p></div>
+        <div class="card"><h3>Average Rating</h3><p id="average-rating">0.0</p></div>
       </div>
-    </div>
+      <section class="actions">
+        <button id="export-btn">Export CSV</button>
+        <button id="delete-all-btn">Delete All Feedback</button>
+      </section>
+      <section id="feedback-list" class="feedback-list"></section>
+    </main>
   </div>
 
   <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>

@@ -219,10 +219,14 @@ function loadReviews() {
         </div>
         <div class="review-text">${latest.message}</div>
         ${imageTag}
-        <div class="review-footer">
-          <span class="mood-tag">${getMoodTag(latest.rating)}</span>
-          <span class="review-time">${timeAgo(latest.date)}</span>
-        </div>
+       <div class="review-footer">
+  <span class="mood-tag">${getMoodTag(latest.rating)}</span>
+  <span class="review-time">${timeAgo(latest.date)}</span>
+  <span class="like-btn" onclick="toggleLike('${userKey}', 0)">
+    ❤️ ${val.likes?.filter(l => l.startsWith((currentUser?.uid || deviceId) + '-')).length || 0}
+  </span>
+</div>
+
         ${pastHTML}
       `;
       reviewList.appendChild(div);

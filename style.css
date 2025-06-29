@@ -311,3 +311,15 @@ button:hover {
   from { transform: scale(0.8); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
 }
+
+.like-btn {
+  cursor: pointer;
+  color: #d33;
+  margin-left: 10px;
+  font-size: 14px;
+  user-select: none;
+}
+.like-btn:hover {
+  color: #f55;
+}
+
